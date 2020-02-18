@@ -11,11 +11,22 @@
 }
 
 @mixin ThemeHover($backgroundColor) {
-    &:hover    { background-color: $backgroundColor; }
+    &:hover:not(.hasFocus, .disabled) { background-color: $backgroundColor; }
     &.hasHover { background-color: $backgroundColor; }
 }
 
-@mixin ThemeFocus($borderColor, $boxShadow: none) {
+@mixin ThemeFocus {
+    &.hasFocus {
+        @include FocusBox;
+        background-color: $D80;
+
+        &.hasError {
+            @include FocusBoxError
+        }
+    }
+}
+
+@mixin ThemeFocusPanelTile($borderColor, $boxShadow: none) {
     &.hasFocus {
         border-color: $borderColor;
         box-shadow: $boxShadow;
@@ -29,9 +40,22 @@
     }
 }
 
+@mixin ThemeWarning($borderColor, $boxShadow: none) {
+    &.hasWarning {
+        border-color: $borderColor;
+        box-shadow: $boxShadow;
+    }
+}
+
 @mixin Selection($color) {
     &::selection      { background: $color; }
     &::-moz-selection { background: $color; }
+}
+
+@mixin ThemeDisabled($borderColor, $backgroundColor, $color) {
+  &.disabled {
+    @include ThemeDefault($borderColor, $backgroundColor, $color);
+  }
 }
 
 @mixin Placeholder($color) {

@@ -1,27 +1,53 @@
-import React from 'react';
 import ReactTestUtils from 'react-dom/test-utils';
 import inputWithOptionsDriverFactory from '../InputWithOptions/InputWithOptions.driver';
-import ReactDOM from 'react-dom';
-import initial from 'lodash.initial';
+import tagDriverFactory from '../Tag/Tag.driver';
 
-const multiSelectDriverFactory = ({element, wrapper, component}) => {
+const multiSelectDriverFactory = ({ element }) => {
+  const {
+    driver,
+    inputDriver,
+    dropdownLayoutDriver,
+  } = inputWithOptionsDriverFactory({ element });
 
-  const {driver, inputDriver, dropdownLayoutDriver} = inputWithOptionsDriverFactory({element, wrapper});
+  const inputWrapper = driver.inputWrapper();
 
-  const inputWrapper = driver.inputWrapper().childNodes[0];
-  const tags = initial(inputWrapper.childNodes);
+  const tags = [...inputWrapper.querySelectorAll('[data-hook="tag"]')];
 
   const multiSelectDriver = Object.assign(driver, {
+    /** returns the max height of the component */
+    getMaxHeight: () => inputWrapper.style.maxHeight,
+
+    /** click on the input element wrapper */
     clickOnInputWrapper: () => ReactTestUtils.Simulate.click(inputWrapper),
+
+    /** returns true if the input is focused */
+    inputWrapperHasFocus: () => inputWrapper.classList.contains('hasFocus'),
+
+    /** returns true if the input has error */
+    inputWrapperHasError: () => inputWrapper.classList.contains('error'),
+
+    /** returns true if the input is disabled */
+    inputWrapperIsDisabled: () => inputWrapper.classList.contains('disabled'),
+
+    /** returns the number of tags selected in the input */
     numberOfTags: () => tags.length,
+    customSuffixExists: () =>
+      !!inputWrapper.querySelector('[data-hook="custom-suffix"]'),
+
+    /** returns the label of the tag given it's index */
     getTagLabelAt: index => tags[index].textContent,
-    setProps: props => {
-      const ClonedWithProps = React.cloneElement(component, Object.assign({}, component.props, props), ...(component.props.children || []));
-      ReactDOM.render(<div ref={r => element = r}>{ClonedWithProps}</div>, wrapper);
-    }
+
+    /** press the comma key in the input field */
+    pressCommaKey: () => inputDriver.keyDown(','),
+
+    /** returns the `tagDriver` for the specified tag id */
+    getTagDriverByTagId: tagId =>
+      tagDriverFactory({
+        element: tags.find(tag => tag.id === tagId),
+      }),
   });
 
-  return {driver: multiSelectDriver, inputDriver, dropdownLayoutDriver};
+  return { driver: multiSelectDriver, inputDriver, dropdownLayoutDriver };
 };
 
 export default multiSelectDriverFactory;

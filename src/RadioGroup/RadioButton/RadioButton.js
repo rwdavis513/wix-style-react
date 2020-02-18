@@ -1,86 +1,164 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import uniqueId from 'lodash.uniqueid';
+import uniqueId from 'lodash/uniqueId';
+import classnames from 'classnames';
 import styles from '../RadioGroup.scss';
-import classNames from 'classnames';
-import WixComponent from '../../WixComponent';
+import { withFocusable, focusableStates } from '../../common/Focusable';
+import Text from '../../Text';
 
-class RadioButton extends WixComponent {
+class RadioButton extends React.PureComponent {
+  static displayName = 'RadioGroup.Radio';
+
+  static propTypes = {
+    /** Applied as data-hook HTML attribute that can be used in the tests */
+    dataHook: PropTypes.string,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    vAlign: PropTypes.oneOf(['center', 'top']),
+    name: PropTypes.string,
+    onChange: PropTypes.func,
+    checked: PropTypes.bool,
+    disabled: PropTypes.bool,
+    children: PropTypes.any,
+    style: PropTypes.object,
+    type: PropTypes.oneOf(['default', 'button']),
+    lineHeight: PropTypes.string,
+    tabIndex: PropTypes.number,
+
+    /** Selection area emphasises the clickable area, none means no emphasis, hover is when the mouse is on the component, and always will show constantly */
+    selectionArea: PropTypes.oneOf(['none', 'hover', 'always']),
+
+    /** optional node to be rendered under label. Clicking it will not trigger `onChange` */
+    content: PropTypes.node,
+  };
+
+  static defaultProps = {
+    vAlign: 'center',
+    type: 'default',
+    content: null,
+    tabIndex: 0,
+  };
+
   constructor(props) {
     super(props);
     this.id = uniqueId();
   }
 
-  render() {
-    const {value, vAlign, checked, disabled, name, type, onChange, style} = this.props;
-
-    const radioClasses = classNames({
-      [styles.radio]: true,
-      [styles.checked]: checked,
-      [styles.disabled]: disabled
-    });
-
-    const labelClasses = classNames({
-      [styles.vcenter]: vAlign === 'center',
-      [styles.vtop]: vAlign === 'top'
-    });
-
-    const buttonClasses = classNames({
-      [styles.checked]: checked,
-    });
+  renderButton() {
+    const {
+      dataHook,
+      checked,
+      disabled,
+      onChange,
+      value,
+      icon,
+      children,
+      selectionArea,
+    } = this.props;
 
     return (
-        type === 'button' ? (
-          <div className={styles.buttonWrapper}>
-            <button
-              className={buttonClasses}
-              checked={checked}
-              disabled={disabled}
-              id={this.id}
-              onClick={() => (!checked && !disabled) ? onChange(value) : null}
-              >
-              {this.props.children}
-            </button>
-          </div>
-        ) : (
-          <div className={styles.radioWrapper} style={style}>
-            <input
-              type="radio"
-              name={name}
-              value={value}
-              id={this.id}
-              checked={checked}
-              disabled={disabled}
-              onChange={() => (!checked && !disabled) ? onChange(value) : null}
-              />
-            <label htmlFor={this.id} className={labelClasses} data-hook="radio-label">
-              <div className={radioClasses}/>
-              <div className={styles.children}>
-                {this.props.children}
-              </div>
-            </label>
-          </div>
-      )
+      <button
+        data-hook={dataHook}
+        type="button"
+        className={classnames(styles.radioButton, {
+          [styles.checked]: checked,
+          [styles.selectionAreaAlways]: selectionArea === 'always',
+          [styles.selectionAreaHover]: selectionArea === 'hover',
+        })}
+        checked={checked}
+        disabled={disabled}
+        id={this.id}
+        onClick={() => (!checked && !disabled ? onChange(value) : null)}
+      >
+        {icon && <span>{icon}</span>}
+        {children && <span>{children}</span>}
+      </button>
     );
+  }
+
+  renderRadio() {
+    const {
+      dataHook,
+      checked,
+      children,
+      content,
+      disabled,
+      lineHeight,
+      name,
+      onChange,
+      style,
+      vAlign,
+      value,
+      tabIndex,
+    } = this.props;
+
+    return (
+      <div
+        data-hook={dataHook}
+        className={classnames(styles.radioWrapper, {
+          [styles.disabled]: disabled,
+          [styles.checked]: checked,
+        })}
+        style={style}
+        tabIndex={disabled ? null : tabIndex}
+        onFocus={this.props.focusableOnFocus}
+        onBlur={this.props.focusableOnBlur}
+        {...focusableStates(this.props)}
+      >
+        <input
+          type="radio"
+          name={name}
+          value={value}
+          id={this.id}
+          checked={checked}
+          disabled={disabled}
+          onChange={() => (!checked && !disabled ? onChange(value) : null)}
+        />
+
+        <label
+          data-hook="radio-label"
+          style={{ lineHeight }}
+          htmlFor={this.id}
+          className={classnames({
+            [styles.vcenter]: vAlign === 'center',
+            [styles.vtop]: vAlign === 'top',
+          })}
+        >
+          <div
+            style={{ height: lineHeight }}
+            className={styles.radioButtonWrapper}
+            data-hook="radiobutton-radio"
+          >
+            <div
+              className={classnames(styles.radio, {
+                [styles.radioButtonChecked]: checked,
+              })}
+            />
+          </div>
+
+          {children && (
+            <Text
+              className={styles.children}
+              data-hook="radiobutton-children"
+              tagName="div"
+              size="medium"
+              weight="thin"
+              secondary
+            >
+              {children}
+            </Text>
+          )}
+        </label>
+
+        {content && <div data-hook="radio-button-content">{content}</div>}
+      </div>
+    );
+  }
+
+  render() {
+    return this.props.type === 'button'
+      ? this.renderButton()
+      : this.renderRadio();
   }
 }
 
-RadioButton.defaultProps = {
-  vAlign: 'center'
-};
-
-RadioButton.propTypes = {
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  vAlign: PropTypes.oneOf(['center', 'top']),
-  name: PropTypes.string,
-  onChange: PropTypes.func,
-  checked: PropTypes.bool,
-  disabled: PropTypes.bool,
-  children: PropTypes.any,
-  style: PropTypes.object,
-  type: PropTypes.string,
-};
-
-RadioButton.displayName = 'RadioGroup.Button';
-
-export default RadioButton;
+export default withFocusable(RadioButton);

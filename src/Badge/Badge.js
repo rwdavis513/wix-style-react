@@ -1,58 +1,138 @@
 import React from 'react';
-import classnames from 'classnames';
-import {node, oneOf, string} from 'prop-types';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import { withFocusable } from 'wix-ui-core/dist/src/hocs/Focusable';
 
-import typography, {convertFromUxLangToCss} from '../Typography';
-import styles from './Badge.scss';
+import { SKIN, TYPE, SIZE } from './constants';
+import style from './Badge.st.css';
 
-/**
-  * General purpose badge component to indicate important (or not so) things
-  */
-const Badge = ({children, type, appearance, alignment, dataHook}) => {
-  const className = classnames(
-    styles.badge,
-    styles[type],
-    styles[alignment],
-    typography[convertFromUxLangToCss(appearance)
-  ]);
+import ellipsisHOC from '../common/EllipsisHOC';
 
+const BadgeContent = ({ children, className, ...restProps }) => {
   return (
-    <span className={className} data-hook={dataHook}>
+    <span className={classNames(style.text, className)} {...restProps}>
       {children}
     </span>
   );
 };
 
-Badge.propTypes = {
-  /** node to render into badge */
-  children: node.isRequired,
+// It's a best practice to create the HOC outside the render function,
+// mainly to improve the performance and prevent remounting that in some case could cause issues
+const EllipsedBadgeContent = ellipsisHOC(BadgeContent);
 
-  /** define purpose of a badge, different color for each type */
-  type: oneOf(['default', 'primary', 'success', 'info', 'warning', 'danger']).isRequired,
+class Badge extends React.PureComponent {
+  static propTypes = {
+    /** Applied as data-hook HTML attribute that can be used to create driver in testing */
+    dataHook: PropTypes.string,
+    /** variation of the component structure */
+    type: PropTypes.oneOf(['solid', 'outlined', 'transparent']),
+    /** color indication of the component */
+    skin: PropTypes.oneOf([
+      'general',
+      'standard',
+      'danger',
+      'success',
+      'neutral',
+      'warning',
+      'urgent',
+      'neutralLight',
+      'neutralStandard',
+      'neutralSuccess',
+      'neutralDanger',
+      'premium',
+      'warningLight',
+    ]),
+    /** component size */
+    size: PropTypes.oneOf(['medium', 'small']),
+    /** usually an icon to appear at the beginning of the text */
+    prefixIcon: PropTypes.node,
+    /** usually an icon to appear at the end of the text */
+    suffixIcon: PropTypes.node,
+    /** callback function called when badge is clicked */
+    onClick: PropTypes.func,
+    /** forces an uppercase letters */
+    uppercase: PropTypes.bool,
 
-  /** set `vertical-align` */
-  alignment: oneOf(['top', 'bottom', 'middle']).isRequired,
+    focusableOnFocus: PropTypes.func,
+    focusableOnBlur: PropTypes.func,
 
-  /** choose appearance of typography. For Typography examples see storybook **Common** -> **Typography** */
-  appearance: oneOf([
-    'H0', 'H1', 'H2', 'H2.1', 'H3', 'H4',
-    'T1', 'T1.1', 'T1.2', 'T1.3', 'T1.4',
-    'T2', 'T2.1', 'T2.2', 'T2.3',
-    'T3', 'T3.1', 'T3.2', 'T3.3', 'T3.4',
-    'T4', 'T4.1', 'T4.2', 'T4.3',
-    'T5', 'T5.1'
-  ]).isRequired,
+    /** the text to display in the badge */
+    children: PropTypes.node,
+  };
+  static displayName = 'Badge';
 
-  /** set one to find component in testing environment */
-  dataHook: string
-};
+  static defaultProps = {
+    type: TYPE.solid,
+    skin: SKIN.general,
+    size: SIZE.medium,
+    uppercase: true,
+  };
 
-Badge.defaultProps = {
-  type: 'default',
-  appearance: 'H4',
-  alignment: 'middle'
-};
+  getProps = () => {
+    // that's what you pay for using HOCs...
+    const { focusableOnFocus, focusableOnBlur, ...rest } = this.props;
+    return rest;
+  };
 
-Badge.displayName = 'Badge';
+  _getFocusableProps = () => {
+    // add focusable hooks only when badge is clickable
+    const { onClick, focusableOnFocus, focusableOnBlur } = this.props;
+    return onClick
+      ? {
+          onFocus: focusableOnFocus,
+          onBlur: focusableOnBlur,
+          tabIndex: 0,
+        }
+      : {};
+  };
 
-export default Badge;
+  _renderContent = children => {
+    return <EllipsedBadgeContent ellipsis>{children}</EllipsedBadgeContent>;
+  };
+
+  _getDataAttributes = () => {
+    const { type, skin, size, uppercase, onClick } = this.props;
+    return {
+      'data-type': type,
+      'data-skin': skin,
+      'data-size': size,
+      'data-clickable': !!onClick,
+      'data-uppercase': uppercase,
+    };
+  };
+
+  render() {
+    const {
+      children,
+      prefixIcon,
+      suffixIcon,
+      onClick,
+      dataHook,
+      ...rest
+    } = this.getProps();
+
+    return (
+      <div
+        data-hook={dataHook}
+        {...this._getDataAttributes()}
+        onClick={onClick}
+        {...this._getFocusableProps()}
+        {...style('root', { clickable: !!onClick, ...rest }, this.getProps())}
+      >
+        {prefixIcon &&
+          React.cloneElement(prefixIcon, {
+            className: style.prefix,
+            'data-prefix-icon': true,
+          })}
+        {this._renderContent(children)}
+        {suffixIcon &&
+          React.cloneElement(suffixIcon, {
+            className: style.suffix,
+            'data-suffix-icon': true,
+          })}
+      </div>
+    );
+  }
+}
+
+export default withFocusable(Badge);

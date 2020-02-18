@@ -1,0 +1,64 @@
+:import {
+  -st-from: '../Foundation/stylable/colors.st.css';
+  -st-named: D10, D20, D50, D80
+}
+
+:import {
+  -st-from: '../Foundation/stylable/typography.st.css';
+  -st-named: heading-h1, heading-h2, heading-h3, heading-h4, heading-h5, heading-h6;
+}
+
+.root {
+  -st-states: appearance(enum(H1, H2, H3, H4, H5, H6)), light(boolean);
+  font-weight: normal;
+  margin: 0;
+}
+
+.root:appearance(H1) {
+  -st-mixin: heading-h1;
+  color: value(D10);
+}
+
+.root:appearance(H2) {
+  -st-mixin: heading-h2;
+  color: value(D10);
+}
+
+.root:appearance(H3) {
+  -st-mixin: heading-h3;
+  color: value(D10);
+}
+
+.root:appearance(H4) {
+  -st-mixin: heading-h4;
+  color: value(D10);
+}
+
+.root:appearance(H5) {
+  -st-mixin: heading-h5;
+  color: value(D20);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.root:appearance(H6) {
+  -st-mixin: heading-h6;
+  color: value(D10);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.root:appearance(H1):light,
+.root:appearance(H2):light,
+.root:appearance(H3):light,
+.root:appearance(H4):light {
+  color: white;
+}
+
+.root:appearance(H5):light {
+  color: value(D80);
+}
+
+.root:appearance(H6):light {
+  color: value(D80);
+}

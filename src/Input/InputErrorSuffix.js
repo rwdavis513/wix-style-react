@@ -1,33 +1,29 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
-import Tooltip from '../Tooltip';
-import SvgExclamation from '../svg/Exclamation.js';
-import styles from './Input.scss';
+import ErrorIndicator from '../ErrorIndicator';
+import styles from './InputErrorSuffix.st.css';
 
 class InputErrorSuffix extends React.Component {
   render() {
+    const { tooltipPlacement, errorMessage, narrow } = this.props;
     return (
-      <Tooltip
+      <ErrorIndicator
+        {...styles('root', { narrow }, this.props)}
         dataHook="input-tooltip"
-        disabled={this.props.errorMessage.length === 0}
-        placement="top"
-        moveBy={{x: 2, y: 0}}
-        alignment="center"
-        content={this.props.errorMessage}
-        overlay=""
-        theme="dark"
-        >
-        <div className={styles.exclamation}><SvgExclamation width={2} height={11}/></div>
-      </Tooltip>
+        disabled={errorMessage.length === 0}
+        placement={tooltipPlacement}
+        errorMessage={errorMessage}
+      />
     );
   }
 }
 
 InputErrorSuffix.propTypes = {
   theme: PropTypes.oneOf(['normal', 'paneltitle', 'material', 'amaterial']),
-  errorMessage: PropTypes.string.isRequired,
-  focused: PropTypes.bool
+  errorMessage: PropTypes.node.isRequired,
+  focused: PropTypes.bool,
+  narrow: PropTypes.bool,
+  tooltipPlacement: PropTypes.string,
 };
 
 export default InputErrorSuffix;

@@ -1,0 +1,228 @@
+:import {
+  -st-from: "../Foundation/stylable/colors.st.css";
+  -st-named:
+    B10, B20, B30, B40, B50,
+    D60, D70,
+    D10-05, D10-30,
+    F00,
+}
+
+:import {
+  -st-from: "../Foundation/stylable/opacity.st.css";
+  -st-named: opacity48;
+}
+
+:import {
+  -st-from: "../Foundation/stylable/border.st.css";
+  -st-named: radius08;
+}
+
+:import {
+  -st-from: "wix-ui-core/hocs.st.css";
+  -st-named: Focusable;
+}
+
+:import {
+  -st-from: "../Text/Text.st.css";
+  -st-default: Text;
+}
+
+.root {
+  -st-extends: Focusable;
+  -st-states: theme(enum(dashes, plain, filled, image)), removePadding;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 30px;
+  color: value(B10);
+}
+
+.root:removePadding {
+  padding: 0;
+}
+
+.root:not(:disabled):focus-visible {
+  box-shadow: 0 0 0 3px value(F00);
+}
+
+/** Theme plain */
+
+.root:theme(plain) {
+  background-color: white;
+  border: none;
+}
+
+.root:theme(plain):hover {
+  background-color: value(B40);
+}
+
+.root:theme(plain):active {
+  background-color: value(B30);
+}
+
+.root:theme(plain):disabled {
+  cursor: not-allowed;
+  background-color: value(D10-05);
+  color: value(D10-30);
+}
+
+/** Theme dashes **/
+
+.root:theme(dashes) {
+  border: dashed 1px value(B20);
+  background-color: value(opacity48);
+  border-radius: value(radius08);
+}
+
+.root:theme(dashes):hover {
+  background-color: value(B40);
+}
+
+.root:theme(dashes):active {
+  background-color: value(B30);
+}
+
+.root:theme(dashes):disabled {
+  cursor: not-allowed;
+  background-color: value(D10-05);
+  color: value(D10-30);
+  border: dashed 1px value(D10-30);
+}
+
+.root:not(:disabled):focus-visible:theme(dashes) {
+  box-shadow: 0 0 0 3px value(F00);
+  border: dashed 1px transparent;
+}
+
+/** Theme filled **/
+
+.root:theme(filled) {
+  background-color: value(B50);
+  border-radius: value(radius08);
+  border: none;
+}
+
+.root:theme(filled):hover {
+  background-color: value(B40);
+}
+
+.root:theme(filled):active {
+  background-color: value(B30);
+}
+
+.root:theme(filled):disabled {
+  cursor: not-allowed;
+  background-color: value(D70);
+  color: value(D10-30);
+}
+
+/** Theme image **/
+
+.root:theme(image) {
+  display: block;
+  height: 100%;
+  padding: 12px;
+  border: none;
+  transition: background 0.2s linear;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  background-color: value(B50);
+  border-radius: value(radius08);
+}
+
+.root:theme(image):hover {
+  background-color: value(B40);
+}
+
+.root:theme(image):active {
+  background-color: value(B30);
+}
+
+.root:theme(image):disabled {
+  background-color: value(D70);
+}
+
+/** Content **/
+
+.content {
+  -st-states: theme(enum(image)), alignItems(enum(center, right, left)), size(enum(tiny)), disabled;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/** Specific theme image classname **/
+.content:theme(image) {
+  border: dashed 1px value(B20);
+  border-radius: 3px;
+  padding: 12px 30px;
+}
+
+.content:disabled:theme(image) {
+  cursor: not-allowed;
+  background-color: value(D70);
+  color: value(D10-30);
+  border: dashed 1px value(D60);
+}
+
+.content:alignItems(center) {
+  justify-content: center;
+}
+
+.content:alignItems(left) {
+  justify-content: flex-start;
+}
+
+.content:alignItems(right) {
+  justify-content: flex-end;
+}
+
+.content:size(tiny) {
+  flex-direction: row;
+}
+
+/** Text **/
+
+.text {
+  -st-states:size(enum(tiny, small, medium, large));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text:size(tiny) {
+  max-width: 100%;
+  flex-basis: auto;
+}
+
+.text:size(small) {
+  width: 100%;
+  padding-top: 6px;
+}
+
+.text:size(medium) {
+  width: 100%;
+  padding-top: 12px;
+}
+
+.text:size(large) {
+  width: 100%;
+  padding-top: 12px;
+}
+
+.text Text {
+  color: value(B10);
+}
+
+.root:disabled .text Text {
+  color: value(D10-30);
+}

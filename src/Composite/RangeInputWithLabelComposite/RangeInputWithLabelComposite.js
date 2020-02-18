@@ -1,13 +1,23 @@
-import React, {Children} from 'react';
-import {any} from 'prop-types';
-import WixComponent from '../../WixComponent';
+import React, { Children } from 'react';
+import * as PropTypes from 'prop-types';
+import WixComponent from '../../BaseComponents/WixComponent';
 import styles from './RangeInputWithLabelComposite.scss';
+import classNames from 'classnames';
+import FieldLabelAttributes from '../../FieldLabelAttributes/FieldLabelAttributes';
 
 class RangeInputWithLabelComposite extends WixComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      hasFocusFirst: false,
+      hasFocusLast: false,
+    };
+  }
+
   _doKeyDown(e) {
     const keys = {
       upArrow: 38,
-      downArrow: 40
+      downArrow: 40,
     };
     if (e.keyCode === keys.upArrow && !isNaN(e.target.value)) {
       e.preventDefault();
@@ -19,35 +29,97 @@ class RangeInputWithLabelComposite extends WixComponent {
     }
   }
 
+  _handleFocusFirst() {
+    this.setState({ hasFocusFirst: true });
+  }
+
+  _handleBlurFirst() {
+    this.setState({ hasFocusFirst: false });
+  }
+
+  _handleFocusLast() {
+    this.setState({ hasFocusLast: true });
+  }
+
+  _handleBlurLast() {
+    this.setState({ hasFocusLast: false });
+  }
+
   render() {
     const children = Children.toArray(this.props.children);
-    const label = children.length === 3 ? children[0] : null;
+    const rangeType = this.props.children[1].type.displayName;
+    const label =
+      children.length === 3 ? (
+        <div className={styles.label}>
+          {children[0]}
+          {this.props.required || this.props.info || this.props.tooltip ? (
+            <FieldLabelAttributes
+              required={this.props.required}
+              info={this.props.info}
+              tooltip={this.props.tooltip}
+              appendToParent={this.props.appendToParent}
+            />
+          ) : null}
+        </div>
+      ) : null;
     const firstInput = children.length === 3 ? children[1] : children[0];
     const lastInput = children.length === 3 ? children[2] : children[1];
-    const moreFirstInputProps = {
-      noRightBorderRadius: styles.firstinput,
-      onKeyDown: e => this._doKeyDown(e)
+
+    const additionalFirstInputProps = {
+      className:
+        rangeType === 'DatePicker' ? styles.firstDate : styles.firstinput,
+      noRightBorderRadius: true,
+      onKeyDown: e => this._doKeyDown(e),
+      onFocus: e => this._handleFocusFirst(e),
+      onBlur: e => this._handleBlurFirst(e),
     };
-    const moreLastInputProps = {
-      noLeftBorderRadius: styles.lastinput,
-      onKeyDown: e => this._doKeyDown(e)
+
+    const additionalLastInputProps = {
+      className:
+        rangeType === 'DatePicker' ? styles.lastDate : styles.lastinput,
+      noLeftBorderRadius: true,
+      onKeyDown: e => this._doKeyDown(e),
+      onFocus: e => this._handleFocusLast(e),
+      onBlur: e => this._handleBlurLast(e),
     };
-    return (<div className={styles.wrapper}>
-      { label ?
-        <div className={styles.label}>
-          {label}
-        </div> : null
-      }
-      <div className={styles.inputs}>
-        { React.cloneElement(firstInput, moreFirstInputProps)}
-        { React.cloneElement(lastInput, moreLastInputProps)}
+
+    const inputWrapperClassNames = classNames({
+      [styles.hasFocusFirst]: this.state.hasFocusFirst,
+      [styles.hasFocusLast]: this.state.hasFocusLast,
+      [styles.inputs]: true,
+    });
+
+    return (
+      <div className={styles.wrapper}>
+        {label}
+        <div className={inputWrapperClassNames}>
+          {React.cloneElement(
+            firstInput,
+            rangeType === 'DatePicker'
+              ? { inputProps: additionalFirstInputProps }
+              : additionalFirstInputProps,
+          )}
+          {React.cloneElement(
+            lastInput,
+            rangeType === 'DatePicker'
+              ? { inputProps: additionalLastInputProps }
+              : additionalLastInputProps,
+          )}
+        </div>
       </div>
-    </div>);
+    );
   }
 }
 
 RangeInputWithLabelComposite.propTypes = {
-  children: any
+  ...WixComponent.propTypes,
+  children: PropTypes.any,
+  required: PropTypes.bool,
+  info: PropTypes.string,
+};
+
+RangeInputWithLabelComposite.defaultProps = {
+  appendToParent: false,
 };
 
 RangeInputWithLabelComposite.displayName = 'RangeInputWithLabelComposite';

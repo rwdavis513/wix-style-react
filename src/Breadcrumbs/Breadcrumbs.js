@@ -1,131 +1,173 @@
 import React from 'react';
-import {arrayOf, func, oneOf, oneOfType, node, number, shape, string, any} from 'prop-types';
-import classnames from 'classnames';
-
-import Text from '../Text';
-import WixComponent from '../WixComponent';
-import BreadcrumbsPathFactory from './BreadcrumbsPathFactory';
+import {
+  arrayOf,
+  func,
+  oneOf,
+  oneOfType,
+  node,
+  number,
+  shape,
+  string,
+  any,
+  bool,
+} from 'prop-types';
 import styles from './Breadcrumbs.scss';
+import classnames from 'classnames';
+import Text from '../Text';
+import BreadcrumbsChevronRight from 'wix-ui-icons-common/system/BreadcrumbsChevronRight';
+import { DATA_HOOKS, DATA_ACTIVE, DATA_POSITION_ID } from './constnats';
 
-class Breadcrumbs extends WixComponent {
+/**
+ * a way to visualise current navigation path
+ */
+class Breadcrumbs extends React.PureComponent {
+  static displayName = 'Breadcrumbs';
+
   static propTypes = {
-    items: arrayOf(shape({
-      id: oneOfType([
-        string,
-        number
-      ]).isRequired,
-      value: oneOfType([
-        node,
-        string
-      ]).isRequired,
-      link: string
-    })).isRequired,
+    /**
+     * * __id__ - Specifies the item id
+     * * __link__ - Optional link to be called on click
+     * * __value__ - Value to be shown on breadcrumb
+     * * __disabled__ - if this value is disabled
+     * * __customElement__ - A custom item which will be rendered
+     */
+    items: arrayOf(
+      shape({
+        id: oneOfType([string, number]).isRequired,
+        value: node.isRequired,
+        link: string,
+        customElement: any,
+        disabled: bool,
+      }),
+    ).isRequired,
     onClick: func,
-    activeId: oneOfType([
-      string,
-      number
-    ]),
+    activeId: oneOfType([string, number]),
     size: oneOf(['medium', 'large']),
     theme: oneOf(['onWhiteBackground', 'onGrayBackground', 'onDarkBackground']),
-    customElement: any
-  }
+    /** Applied as data-hook HTML attribute that can be used to create driver in testing */
+    dataHook: string,
+  };
 
   static defaultProps = {
     size: 'medium',
     theme: 'onGrayBackground',
-  }
+    onClick: () => {},
+  };
 
-  handleBreadcrumbClick = item =>
-    this.props.onClick && this.props.onClick(item)
-
-  getValueAppearance(isActive) {
-    const {theme, size} = this.props;
+  getTextAppearance(isActive) {
+    const { theme, size } = this.props;
 
     const isDarkBackground = theme === 'onDarkBackground';
-    const isMediumSize = size === 'medium';
+    const isSmallSize = size === 'medium';
 
-    if (isActive && !isDarkBackground) {
-      return isMediumSize ? 'T3' : 'T1';
-    }
-
-    if (isMediumSize) {
-      return isDarkBackground ? 'T3.2' : 'T3.1';
-    } else {
-      return isDarkBackground ? 'T1.2' : 'T1.1';
-    }
+    return {
+      weight: isActive ? 'normal' : 'thin',
+      light: isDarkBackground,
+      size: isSmallSize ? 'small' : 'medium',
+    };
   }
 
-  createItem({item, isActive, onClick}) {
-    const breadcrumbValue = value =>
+  createItem({ item, isActive, onClick, className, id }) {
+    const breadcrumbText = value => (
       <Text
-        dataHook="breadcrumbs-item"
-        appearance={this.getValueAppearance(isActive)}
-        children={value}
-        />;
+        dataHook={DATA_HOOKS.BREADCRUMBS_ITEM}
+        {...this.getTextAppearance(isActive)}
+      >
+        {value}
+      </Text>
+    );
 
-    const defaultBreadcrumb = () =>
+    const defaultBreadcrumb = id => (
       <button
         type="button"
-        data-hook="breadcrumb-clickable"
-        className={classnames(styles.item, styles.button)}
+        data-hook={`${DATA_HOOKS.BREADCRUMB_CLICKABLE}-${id}`}
+        className={classnames(styles.item, styles.button, className, {
+          [styles.disabled]: item.disabled,
+          [styles.active]: isActive,
+        })}
         onClick={onClick}
-        children={breadcrumbValue(item.value)}
-        />;
+        children={breadcrumbText(item.value)}
+      />
+    );
 
-    const linkBreadcrumb = () =>
+    const linkBreadcrumb = id => (
       <a
         href={item.link}
-        data-hook="breadcrumb-clickable"
-        className={classnames(styles.item, styles.link)}
+        data-hook={`${DATA_HOOKS.BREADCRUMB_CLICKABLE}-${id}`}
+        className={classnames(styles.item, styles.link, className, {
+          [styles.disabled]: item.disabled,
+          [styles.active]: isActive,
+        })}
         onClick={onClick}
-        children={breadcrumbValue(item.value)}
-        />;
+        children={breadcrumbText(item.value)}
+      />
+    );
 
-    const customBreadcrumb = () =>
+    const customBreadcrumb = id => (
       <span
-        data-hook="breadcrumb-clickable"
-        className={styles.item}
+        data-hook={`${DATA_HOOKS.BREADCRUMB_CLICKABLE}-${id}`}
+        className={classnames(styles.item, className)}
         onClick={onClick}
-        children={breadcrumbValue(item.customElement)}
-        />;
+        children={breadcrumbText(item.customElement)}
+      />
+    );
 
     if (isActive) {
-      return defaultBreadcrumb();
+      return defaultBreadcrumb(id);
     } else if (item.customElement) {
-      return customBreadcrumb();
+      return customBreadcrumb(id);
     } else if (item.link) {
-      return linkBreadcrumb();
+      return linkBreadcrumb(id);
     } else {
-      return defaultBreadcrumb();
+      return defaultBreadcrumb(id);
     }
   }
 
-  renderItem(item, activeId, isDividerVisible) {
-    const isActive = activeId === item.id;
+  _getIsActive = item => this.props.activeId === item.id;
+
+  _handleItemClick = item => () => !item.disabled && this.props.onClick(item);
+
+  _getItemWrapperDataAttributes = ({ position, item }) => {
+    return {
+      'data-hook': `${DATA_HOOKS.ITEM_WRAPPER}-${position}`,
+      [DATA_ACTIVE]: this._getIsActive(item),
+      [DATA_POSITION_ID]: position,
+    };
+  };
+
+  render() {
+    const { items, size, theme, dataHook } = this.props;
 
     return (
       <div
-        key={item.id}
-        className={classnames(styles.itemContainer, {[styles.active]: isActive})}
-        >
-        { this.createItem({item, isActive, onClick: () => this.handleBreadcrumbClick(item)}) }
-        { isDividerVisible && <div className={styles.divider}/> }
-      </div>
-    );
-  }
+        data-hook={dataHook}
+        className={classnames(styles[size], styles[theme])}
+      >
+        {items.map((item, i, allItems) => (
+          <div
+            key={item.id}
+            className={classnames(styles.itemContainer, {
+              [styles.active]: this._getIsActive(item),
+            })}
+            {...this._getItemWrapperDataAttributes({ position: i, item })}
+          >
+            {this.createItem({
+              id: i,
+              item,
+              isActive: this._getIsActive(item),
+              onClick: this._handleItemClick(item),
+              className:
+                i === 0 && allItems.length === 1 ? styles.itemFullWidth : '',
+            })}
 
-  render() {
-    const {items, size, theme, activeId} = this.props;
-
-    return (
-      <div className={classnames(styles[size], styles[theme])}>
-        { items.map((item, i, allItems) =>
-          this.renderItem(item, activeId, allItems[i + 1]))
-        }
+            {allItems[i + 1] && (
+              <BreadcrumbsChevronRight className={styles.divider} />
+            )}
+          </div>
+        ))}
       </div>
     );
   }
 }
 
-export const breadcrumbsPathFactory = BreadcrumbsPathFactory;
 export default Breadcrumbs;

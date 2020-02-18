@@ -1,31 +1,41 @@
-import React, {cloneElement} from 'react';
+import React, { cloneElement } from 'react';
 import PropTypes from 'prop-types';
+import WixComponent from '../BaseComponents/WixComponent';
 import ReactDOM from 'react-dom';
-
-import WixComponent from '../WixComponent';
 import TooltipContent from './TooltipContent';
 import position from './TooltipPosition';
-
 import styles from './TooltipContent.scss';
+import { TooltipContainerStrategy } from './TooltipContainerStrategy';
+import throttle from 'lodash/throttle';
+import { ZIndex } from '../ZIndex';
 
 const renderSubtreeIntoContainer = ReactDOM.unstable_renderSubtreeIntoContainer;
 
+// TestId is a uniq Tooltip id, used to find the content element in tests.
+let testId = 0;
+function nextTestId() {
+  testId++;
+  return testId;
+}
+
+//maintain a 60fps rendering
+const createAThrottledOptimizedFunction = cb => () =>
+  window.requestAnimationFrame(throttle(cb, 16));
+
+const popoverConfig = {
+  contentClassName: styles.popoverTooltipContent,
+  theme: 'light',
+  showTrigger: 'click',
+  hideTrigger: 'click',
+};
+
+/** A Tooltip component */
 class Tooltip extends WixComponent {
-
-  componentElements() {
-    const elements = super.componentElements();
-    return this._mountNode ? elements.concat(this._mountNode) : elements;
-  }
-
-  onClickOutside(e) {
-    if (this.props.shouldCloseOnClickOutside) {
-      this.hide();
-    } else if (this.props.onClickOutside) {
-      this.props.onClickOutside && this.props.onClickOutside(e);
-    }
-  }
+  static displayName = 'Tooltip';
 
   static propTypes = {
+    dataHook: PropTypes.string,
+    /** alignment of the tooltip's text  */
     textAlign: PropTypes.string,
     children: PropTypes.node,
     content: PropTypes.node.isRequired,
@@ -34,26 +44,69 @@ class Tooltip extends WixComponent {
     theme: PropTypes.oneOf(['light', 'dark', 'error']),
     showDelay: PropTypes.number,
     hideDelay: PropTypes.number,
-    showTrigger: PropTypes.oneOf(['custom', 'mouseenter', 'mouseleave', 'click', 'focus', 'blur']),
-    hideTrigger: PropTypes.oneOf(['custom', 'mouseenter', 'mouseleave', 'click', 'focus', 'blur']),
+    showTrigger: PropTypes.oneOf([
+      'custom',
+      'mouseenter',
+      'mouseleave',
+      'click',
+      'focus',
+      'blur',
+    ]),
+    hideTrigger: PropTypes.oneOf([
+      'custom',
+      'mouseenter',
+      'mouseleave',
+      'click',
+      'focus',
+      'blur',
+    ]),
     active: PropTypes.bool,
     bounce: PropTypes.bool,
     disabled: PropTypes.bool,
-    maxWidth: PropTypes.string,
+
+    /** Apply popover styles and even triggers */
+    popover: PropTypes.bool,
+
+    /** The tooltip max width  */
+    maxWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+
+    /** The tooltip min width  */
+    minWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+
+    /** Callback when clicking outside  */
     onClickOutside: PropTypes.func,
 
-    /**
-     * Callback to be called when the tooltip has been shown
-     */
+    /** override the theme text color of the tooltip  */
+    color: PropTypes.string,
+
+    /** override the theme text line height of the tooltip  */
+    lineHeight: PropTypes.string,
+
+    /** Callback to be called when the tooltip has been shown */
     onShow: PropTypes.func,
+
+    /** Callback to be called when the tooltip has been hidden */
+    onHide: PropTypes.func,
+
+    /** z index of the tooltip  */
     zIndex: PropTypes.number,
 
     /**
-     * By default tooltip is appended to a body, to avoid CSS collisions.
-     * But if you want your tooltip to scroll with a content, append tooltip to a parent.
-     * Just make sure the CSS are not leaked.
+     * In some cases when you need a tooltip scroll with your element, you can append the tooltip to the direct parent, just
+     * don't forget to apply `relative`, `absolute` positioning. And be aware that some of your styles may leak into
+     * tooltip content.
      */
     appendToParent: PropTypes.bool,
+
+    /**
+     * In cases where you need to append the tooltip to some ancestor which is not the direct parent, you can pass a
+     * predicate function of the form `(element: DOMElement) => Boolean`, and the tooltip will be attached to the
+     * closest ancestor for which the predicate returns `true`
+     */
+    appendByPredicate: PropTypes.func,
+
+    /** Element to attach the tooltip to  */
+    appendTo: PropTypes.any,
 
     /**
      * Allows to shift the tooltip position by x and y pixels.
@@ -61,7 +114,7 @@ class Tooltip extends WixComponent {
      */
     moveBy: PropTypes.shape({
       x: PropTypes.number,
-      y: PropTypes.number
+      y: PropTypes.number,
     }),
 
     /**
@@ -72,7 +125,19 @@ class Tooltip extends WixComponent {
     moveArrowTo: PropTypes.number,
     size: PropTypes.oneOf(['normal', 'large']),
     shouldCloseOnClickOutside: PropTypes.bool,
-    relative: PropTypes.bool
+    relative: PropTypes.bool,
+
+    /** Allows changing the padding of the content */
+    padding: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+
+    /** Allows updating the tooltip position **/
+    shouldUpdatePosition: PropTypes.bool,
+
+    /** Show Tooltip Immediately - with no delay and no animation */
+    showImmediately: PropTypes.bool,
+
+    /** Show an arrow shape */
+    showArrow: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -81,110 +146,221 @@ class Tooltip extends WixComponent {
     showTrigger: 'mouseenter',
     hideTrigger: 'mouseleave',
     showDelay: 200,
-    hideDelay: 500,
-    zIndex: 2000,
-    maxWidth: '1200px',
+    hideDelay: 0,
+    zIndex: ZIndex('Tooltip'),
+    maxWidth: '204px',
     onClickOutside: null,
     onShow: null,
+    onHide: null,
     active: false,
     theme: 'light',
     disabled: false,
     children: null,
     size: 'normal',
     shouldCloseOnClickOutside: false,
-    textAlign: 'center',
-    relative: false
+    textAlign: 'left',
+    relative: false,
+    shouldUpdatePosition: false,
+    showImmediately: false,
+    showArrow: true,
   };
 
   _childNode = null;
   _mountNode = null;
   _showTimeout = null;
+  _showInterval = null;
   _hideTimeout = null;
   _unmounted = false;
+  _containerScrollHandler = null;
 
-  state = {
-    visible: false,
-    hidden: true
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      visible: false,
+      hidden: true,
+    };
 
-  componentDidUpdate() {
-    if (this._mountNode && this.state.visible) {
-      const arrowPlacement = {top: 'bottom', left: 'right', right: 'left', bottom: 'top'};
-      const position = this.props.relative ? 'relative' : 'absolute';
-      const tooltip = (
-        <TooltipContent
-          onMouseEnter={() => this._onTooltipContentEnter()}
-          onMouseLeave={() => this._onTooltipContentLeave()}
-          ref={ref => {
-            if (this.props.relative) {
-              this.tooltipContent = ref.tooltip;
-            } else {
-              this.tooltipContent = ref;
-            }
-          }}
-          theme={this.props.theme}
-          bounce={this.props.bounce}
-          arrowPlacement={arrowPlacement[this.props.placement]}
-          style={{zIndex: this.props.zIndex, position}}
-          arrowStyle={this.state.arrowStyle}
-          maxWidth={this.props.maxWidth}
-          size={this.props.size}
-          textAlign={this.props.textAlign}
-          >
-          {this.props.content}
-        </TooltipContent>);
+    this._tooltipContainerStrategy = new TooltipContainerStrategy(
+      props.appendTo,
+      props.appendToParent,
+      props.appendByPredicate,
+    );
 
-      renderSubtreeIntoContainer(this, tooltip, this._mountNode);
+    this.testId = nextTestId();
+    this.contentHook = this._createContentHook();
+  }
+
+  _createContentHook = () =>
+    `tooltip-content-${this.props.dataHook || ''}-${this.testId}`;
+
+  _setContentDataHook() {
+    if (this._childNode) {
+      this._childNode.setAttribute('data-content-hook', this.contentHook);
     }
+  }
+
+  componentElements() {
+    const elements = super.componentElements();
+    return this._mountNode ? elements.concat(this._mountNode) : elements;
+  }
+
+  onClickOutside(e) {
+    if (this.props.shouldCloseOnClickOutside) {
+      this.hide();
+    }
+
+    this.props.onClickOutside && this.props.onClickOutside(e);
+  }
+
+  componentDidUpdate(prevProps) {
+    super.componentDidUpdate(prevProps);
+    if (prevProps.dataHook !== this.props.dataHook) {
+      this.contentHook = this._createContentHook();
+      this._setContentDataHook();
+    }
+    this.renderTooltipIntoContainer();
+  }
+
+  componentDidMount() {
+    super.componentDidMount && super.componentDidMount();
+    this._setContentDataHook();
   }
 
   componentWillUnmount() {
     super.componentWillUnmount && super.componentWillUnmount();
     this._unmounted = true;
+    this._removeNode();
     this._getContainer() && this.hide();
+
+    if (this._showInterval) {
+      clearInterval(this._showInterval);
+    }
   }
 
-  componentWillMount() {
-    super.componentWillMount && super.componentWillMount();
+  UNSAFE_componentWillMount() {
+    super.UNSAFE_componentWillMount && super.UNSAFE_componentWillMount();
     if (this.props.active) {
       this.show();
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    super.componentWillReceiveProps && super.componentWillReceiveProps(nextProps);
-    if (nextProps.active !== this.props.active) {
-      if (this.state.visible && this.props.hideTrigger === 'custom') {
-        if (!nextProps.active) {
-          this.hide();
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    super.UNSAFE_componentWillReceiveProps &&
+      super.UNSAFE_componentWillReceiveProps(nextProps);
+    if (
+      nextProps.active !== this.props.active ||
+      nextProps.disabled !== this.props.disabled
+    ) {
+      if (this.state.visible && this.getTriggers().hideTrigger === 'custom') {
+        if (!nextProps.active || nextProps.disabled) {
+          this.hide(nextProps);
         }
       }
-      if (!this.state.visible && this.props.showTrigger === 'custom') {
-        if (nextProps.active) {
-          this.show();
+      if (!this.state.visible && this.getTriggers().showTrigger === 'custom') {
+        if (nextProps.active && !nextProps.disabled) {
+          this.show(nextProps);
         }
       }
     }
   }
 
+  getTriggers() {
+    return {
+      hideTrigger: this.props.popover ? 'click' : this.props.hideTrigger,
+      showTrigger: this.props.popover ? 'click' : this.props.showTrigger,
+    };
+  }
+
+  renderTooltipIntoContainer = () => {
+    if (this._mountNode && this.state.visible) {
+      const contentClassName = this.props.popover
+        ? popoverConfig.contentClassName
+        : '';
+      const theme = this.props.popover ? popoverConfig.theme : this.props.theme;
+
+      const arrowPlacement = {
+        top: 'bottom',
+        left: 'right',
+        right: 'left',
+        bottom: 'top',
+      };
+      const _position = this.props.relative ? 'relative' : 'absolute';
+      const tooltip = (
+        <TooltipContent
+          dataHook={this.contentHook}
+          contentClassName={contentClassName}
+          onMouseEnter={() => this._onTooltipContentEnter()}
+          onMouseLeave={() => this._onTooltipContentLeave()}
+          ref={ref => {
+            if (this.props.relative) {
+              this.tooltipContent = ref && ref.tooltip;
+            } else {
+              this.tooltipContent = ref;
+            }
+          }}
+          showImmediately={this.props.showImmediately}
+          theme={theme}
+          bounce={this.props.bounce}
+          arrowPlacement={arrowPlacement[this.props.placement]}
+          style={{ zIndex: this.props.zIndex, _position }}
+          arrowStyle={this.state.arrowStyle}
+          maxWidth={this.props.maxWidth}
+          padding={this.props.padding}
+          minWidth={this.props.minWidth}
+          size={this.props.size}
+          textAlign={this.props.textAlign}
+          lineHeight={this.props.lineHeight}
+          color={this.props.color}
+          showArrow={this.props.showArrow}
+        >
+          {this.props.content}
+        </TooltipContent>
+      );
+
+      renderSubtreeIntoContainer(this, tooltip, this._mountNode);
+      if (this.props.shouldUpdatePosition) {
+        setTimeout(() => {
+          this._updatePosition(this.tooltipContent);
+        });
+      }
+    }
+  };
+
   render() {
-    const child = this.props.children;
+    const child = Array.isArray(this.props.children)
+      ? this.props.children[0]
+      : this.props.children;
     if (child) {
       return cloneElement(child, {
-        ref: ref => this._childNode = ReactDOM.findDOMNode(ref),
-        onClick: this._chainCallbacks(child.props ? child.props.onClick : null, this._onClick),
-        onMouseEnter: this._chainCallbacks(child.props ? child.props.onMouseEnter : null, this._onMouseEnter),
-        onMouseLeave: this._chainCallbacks(child.props ? child.props.onMouseLeave : null, this._onMouseLeave),
-        onFocus: this._chainCallbacks(child.props ? child.props.onFocus : null, this._onFocus),
-        onBlur: this._chainCallbacks(child.props ? child.props.onBlur : null, this._onBlur)
+        ref: ref => (this._childNode = ReactDOM.findDOMNode(ref)),
+        onClick: this._chainCallbacks(
+          child.props ? child.props.onClick : null,
+          this._onClick,
+        ),
+        onMouseEnter: this._chainCallbacks(
+          child.props ? child.props.onMouseEnter : null,
+          this._onMouseEnter,
+        ),
+        onMouseLeave: this._chainCallbacks(
+          child.props ? child.props.onMouseLeave : null,
+          this._onMouseLeave,
+        ),
+        onFocus: this._chainCallbacks(
+          child.props ? child.props.onFocus : null,
+          this._onFocus,
+        ),
+        onBlur: this._chainCallbacks(
+          child.props ? child.props.onBlur : null,
+          this._onBlur,
+        ),
       });
     } else {
-      return (<div/>);
+      return <div />;
     }
   }
 
   _chainCallbacks = (first, second) => {
-    return args => {
+    return (...args) => {
       if (first) {
         first.apply(this, args);
       }
@@ -195,21 +371,17 @@ class Tooltip extends WixComponent {
   };
 
   _getContainer() {
-    if (typeof document === 'undefined') {
-      return null;
-    }
-
-    return this.props.appendToParent ? this._childNode.parentElement : document ? document.body : null;
+    return this._tooltipContainerStrategy.getContainer(this._childNode);
   }
 
-  show() {
-    if (this.props.disabled) {
+  show = (props = this.props) => {
+    if (props.disabled) {
       return;
     }
     if (this._unmounted) {
       return;
     }
-    this.setState({hidden: false});
+    this.setState({ hidden: false });
     if (this._hideTimeout) {
       clearTimeout(this._hideTimeout);
       this._hideTimeout = null;
@@ -218,34 +390,70 @@ class Tooltip extends WixComponent {
       return;
     }
     if (!this.state.visible) {
-      this._showTimeout = setTimeout(() => {
-        if (this.props.onShow) {
-          this.props.onShow();
-        }
-
-        this.setState({visible: true}, () => {
-          if (!this._mountNode) {
-            this._mountNode = document.createElement('div');
-            this._getContainer() && this._getContainer().appendChild(this._mountNode);
-          }
-          this._showTimeout = null;
-
-          let fw = 0;
-          let sw = 0;
-          do {
-            this.componentDidUpdate();
-            const tooltipNode = ReactDOM.findDOMNode(this.tooltipContent);
-            fw = this._getRect(tooltipNode).width;
-            this._updatePosition(this.tooltipContent);
-            sw = this._getRect(tooltipNode).width;
-          } while (!this.props.appendToParent && fw !== sw);
-        });
-      }, this.props.showDelay);
+      if (this.props.showImmediately) {
+        this._doShow(props);
+      } else {
+        this._showTimeout = setTimeout(
+          () => this._doShow(props),
+          props.showDelay,
+        );
+      }
     }
+  };
+
+  _doShow(props = this.props) {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    if (props.onShow) {
+      props.onShow();
+    }
+
+    this.setState({ visible: true }, () => {
+      if (!this._mountNode) {
+        this._mountNode = document.createElement('div');
+        const container = this._getContainer();
+        if (container) {
+          container.appendChild(this._mountNode);
+          this._containerScrollHandler = createAThrottledOptimizedFunction(() =>
+            this._updatePosition(this.tooltipContent),
+          );
+          container.addEventListener('scroll', this._containerScrollHandler);
+        }
+      }
+      this._showTimeout = null;
+
+      this.renderTooltipIntoContainer();
+
+      // To prevent any possible jumping of tooltip, we need to try to update tooltip position in sync way
+      const tooltipNode = ReactDOM.findDOMNode(this.tooltipContent);
+      if (tooltipNode) {
+        this._updatePosition(this.tooltipContent);
+      }
+
+      let fw = 0;
+      let sw = 0;
+      // we need to set tooltip position after render of tooltip into container, on next event loop
+      setTimeout(() => {
+        let iterations = 0;
+        let pixelChange = 0;
+        do {
+          const _tooltipNode = ReactDOM.findDOMNode(this.tooltipContent);
+          if (_tooltipNode) {
+            fw = this._getRect(_tooltipNode).width;
+            this._updatePosition(this.tooltipContent);
+            sw = this._getRect(_tooltipNode).width;
+          }
+          ++iterations;
+          pixelChange = Math.abs(fw - sw);
+        } while (!props.appendToParent && pixelChange > 0.1 && iterations < 10);
+      });
+    });
   }
 
-  hide() {
-    this.setState({hidden: true});
+  hide = (props = this.props) => {
+    this.setState({ hidden: true });
+
     if (this._showTimeout) {
       clearTimeout(this._showTimeout);
       this._showTimeout = null;
@@ -256,24 +464,41 @@ class Tooltip extends WixComponent {
     }
 
     if (this.state.visible) {
-      this._hideTimeout = setTimeout(() => {
-        if (this._mountNode) {
-          ReactDOM.unmountComponentAtNode(this._mountNode);
-          this._getContainer() && this._getContainer().removeChild(this._mountNode);
-          this._mountNode = null;
-        }
+      const hideLazy = () => {
+        props.onHide && props.onHide();
+
         this._hideTimeout = null;
         if (!this._unmounted) {
-          this.setState({visible: false});
+          this._removeNode();
+          this.setState({ visible: false });
         }
-      }, this._unmounted ? 0 : this.props.hideDelay);
+      };
+
+      if (this._unmounted) {
+        return hideLazy();
+      }
+
+      this._hideTimeout = setTimeout(hideLazy, props.hideDelay);
+    }
+  };
+
+  _removeNode() {
+    if (this._mountNode) {
+      ReactDOM.unmountComponentAtNode(this._mountNode);
+
+      const container = this._getContainer();
+      if (container) {
+        container.removeChild(this._mountNode);
+        container.removeEventListener('scroll', this._containerScrollHandler);
+      }
+      this._mountNode = null;
     }
   }
 
   _hideOrShow(event) {
-    if (this.props.hideTrigger === event && !this.state.hidden) {
+    if (this.getTriggers().hideTrigger === event && !this.state.hidden) {
       this.hide();
-    } else if (this.props.showTrigger === event) {
+    } else if (this.getTriggers().showTrigger === event) {
       this.show();
     }
   }
@@ -302,19 +527,21 @@ class Tooltip extends WixComponent {
     if (!ref || !tooltipNode) {
       return {
         top: -1,
-        left: -1
+        left: -1,
       };
     }
-    return this._adjustPosition(position(
-      this._getRect(this._childNode),
-      this._getRect(tooltipNode),
-      {
-        placement: this.props.placement,
-        alignment: this.props.alignment,
-        margin: 10
-      },
-      this.props.relative
-    ));
+    return this._adjustPosition(
+      position(
+        this._getRect(this._childNode),
+        this._getRect(tooltipNode),
+        {
+          placement: this.props.placement,
+          alignment: this.props.alignment,
+          margin: 10,
+        },
+        this.props.relative,
+      ),
+    );
   }
 
   _updatePosition(ref) {
@@ -328,15 +555,19 @@ class Tooltip extends WixComponent {
         tooltipNode.style.left = `${style.left}px`;
       } else {
         tooltipNode.style.top = `${style.top}px`;
-        tooltipNode.style.left = `${Math.max(style.left, 0)}px`;
+        tooltipNode.style.left = `${style.left}px`;
       }
 
-      const arrowStyles = this._adjustArrowPosition(this.props.placement, this.props.moveArrowTo);
+      const arrowStyles = this._adjustArrowPosition(
+        this.props.placement,
+        this.props.moveArrowTo,
+      );
       if (Object.keys(arrowStyles).length) {
         const arrow = tooltipNode.querySelector(`.${styles.arrow}`);
-        arrow && Object.keys(arrowStyles).forEach(key => {
-          arrow.style[key] = arrowStyles[key];
-        });
+        arrow &&
+          Object.keys(arrowStyles).forEach(key => {
+            arrow.style[key] = arrowStyles[key];
+          });
       }
     }
   }
@@ -346,9 +577,13 @@ class Tooltip extends WixComponent {
       const isPositive = moveTo > 0;
       const pixels = isPositive ? moveTo : -moveTo;
       if (['top', 'bottom'].includes(placement)) {
-        return isPositive ? {left: `${pixels}px`} : {left: 'auto', right: `${pixels}px`};
+        return isPositive
+          ? { left: `${pixels}px` }
+          : { left: 'auto', right: `${pixels}px` };
       }
-      return isPositive ? {top: `${pixels}px`} : {top: 'auto', bottom: `${pixels}px`};
+      return isPositive
+        ? { top: `${pixels}px` }
+        : { top: 'auto', bottom: `${pixels}px` };
     }
     return {};
   }
@@ -360,34 +595,46 @@ class Tooltip extends WixComponent {
         left: el.offsetLeft,
         top: el.offsetTop,
         width: el.offsetWidth,
-        height: el.offsetHeight
+        height: el.offsetHeight,
+      };
+    }
+
+    const container = this._getContainer(el);
+    if (container !== document.body) {
+      const containerRect = container.getBoundingClientRect();
+      const selfRect = el.getBoundingClientRect();
+      return {
+        left: selfRect.left - containerRect.left + container.scrollLeft,
+        top: selfRect.top - containerRect.top + container.scrollTop,
+        width: selfRect.width,
+        height: selfRect.height,
       };
     }
     return el.getBoundingClientRect();
   }
 
   _adjustPosition(originalPosition) {
-    let {x = 0, y = 0} = this.props.moveBy || {};
+    let { x = 0, y = 0 } = this.props.moveBy || {};
     // TODO: Once thoroughly tested, and converted to using offsetX props, we could remove this one.
     if (!this.props.appendToParent) {
-      x += (window.scrollX || 0);
-      y += (window.scrollY || 0);
+      x += window.scrollX || 0;
+      y += window.scrollY || 0;
     }
     return {
       left: originalPosition.left + x,
-      top: originalPosition.top + y
+      top: originalPosition.top + y,
     };
   }
 
   _onTooltipContentEnter() {
-    if (this.props.showTrigger === 'custom') {
+    if (this.getTriggers().showTrigger === 'custom') {
       return;
     }
     this.show();
   }
 
   _onTooltipContentLeave() {
-    if (this.props.hideTrigger === 'custom') {
+    if (this.getTriggers().hideTrigger === 'custom') {
       return;
     }
     this._onMouseLeave();

@@ -1,17 +1,23 @@
 import React from 'react';
-import {children, optional, once} from '../Composite';
+import * as Composite from '../Composite';
 import Label from '../Label';
 import Input from '../Input';
+import DatePicker from '../DatePicker';
 import RangeInputWithLabelComposite from '../Composite/RangeInputWithLabelComposite/RangeInputWithLabelComposite';
 
-const Range = ({...props, children}) => (
+const Range = ({ children, ...props }) => (
   <RangeInputWithLabelComposite {...props}>
     {children}
   </RangeInputWithLabelComposite>
 );
 
 Range.propTypes = {
-  children: children(optional(Label), once(Input), once(Input))
+  ...RangeInputWithLabelComposite.propTypes,
+  children: Composite.children(
+    Composite.optional(Label),
+    Composite.oneOf(Input, DatePicker),
+    Composite.oneOf(Input, DatePicker),
+  ),
 };
 
 Range.displayName = 'Range';

@@ -1,0 +1,10 @@
+export const tooltipTestkitFactory: any;
+<%
+  components
+  .filter(component => !component.noTestkit)
+  .filter(component => !component.manualExport)
+  .map(component => {
+    const camelName = utils.toCamel(component.name);
+    const testkitName = component.puppeteerTestkitExportName || camelName + 'TestkitFactory';
+%>export const <%= testkitName %>: any;
+<% }) %>

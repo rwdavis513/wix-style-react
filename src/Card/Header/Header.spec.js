@@ -1,41 +1,76 @@
 import React from 'react';
-import ReactTestUtils from 'react-dom/test-utils';
+import { mount } from 'enzyme';
+
 import headerDriverFactory from './Header.driver';
-import {createDriverFactory} from '../../test-common';
+import { headerUniDriverFactory } from './Header.uni.driver';
 import Header from './Header';
-import {headerTestkitFactory} from '../../../testkit';
-import {headerTestkitFactory as enzymeHeaderTestkitFactory} from '../../../testkit/enzyme';
-import {mount} from 'enzyme';
+import { headerTestkitFactory } from '../../../testkit';
+import { headerTestkitFactory as enzymeHeaderTestkitFactory } from '../../../testkit/enzyme';
+import {
+  isTestkitExists,
+  isEnzymeTestkitExists,
+} from '../../../test/utils/testkit-sanity';
+import {
+  createRendererWithDriver,
+  createRendererWithUniDriver,
+} from '../../../test/utils/unit';
 
 describe('Header', () => {
-  const createDriver = createDriverFactory(headerDriverFactory);
-
-  it('should have a title', () => {
-    const driver = createDriver(<Header title="Header Title"/>);
-    expect(driver.title()).toBe('Header Title');
+  describe('[sync]', () => {
+    runTests(createRendererWithDriver(headerDriverFactory));
   });
 
-  it('should have a subtitle', () => {
-    const driver = createDriver(<Header subtitle="Header Subtitle" title="Header Title"/>);
-    expect(driver.subtitle()).toBe('Header Subtitle');
+  describe('[async]', () => {
+    runTests(createRendererWithUniDriver(headerUniDriverFactory));
   });
 
-  describe('testkit', () => {
-    it('should exist', () => {
-      const div = document.createElement('div');
-      const dataHook = 'myDataHook';
-      const wrapper = div.appendChild(ReactTestUtils.renderIntoDocument(<div><Header title="Header Title" dataHook={dataHook}/></div>));
-      const headerTestkit = headerTestkitFactory({wrapper, dataHook});
-      expect(headerTestkit.exists()).toBeTruthy();
+  function runTests(render) {
+    const createDriver = jsx => render(jsx).driver;
+
+    describe('`title` prop', () => {
+      it('should render as string', async () => {
+        const driver = createDriver(<Header title="Header Title" />);
+        expect(await driver.title()).toBe('Header Title');
+      });
+
+      it('should render as component', async () => {
+        const driver = createDriver(<Header title={<div>hello world</div>} />);
+        expect(await driver.title()).toBe('hello world');
+      });
     });
-  });
 
-  describe('enzyme testkit', () => {
-    it('should exist', () => {
-      const dataHook = 'myDataHook';
-      const wrapper = mount(<Header title="Header title" dataHook={dataHook}/>);
-      const headerDriverTestkit = enzymeHeaderTestkitFactory({wrapper, dataHook});
-      expect(headerDriverTestkit.exists()).toBeTruthy();
+    describe('`subtitle` prop', () => {
+      it('should render as string', async () => {
+        const driver = createDriver(
+          <Header subtitle="Header Subtitle" title="Header Title" />,
+        );
+        expect(await driver.subtitle()).toBe('Header Subtitle');
+      });
+
+      it('should render as component', async () => {
+        const driver = createDriver(
+          <Header subtitle={<div>hello world</div>} title="Header Title" />,
+        );
+        expect(await driver.subtitle()).toBe('hello world');
+      });
     });
-  });
+
+    describe('testkits', () => {
+      it('should exist', async () => {
+        expect(
+          isTestkitExists(<Header title="dummy" />, headerTestkitFactory),
+        ).toBe(true);
+      });
+
+      it('should exist for enzyme', async () => {
+        expect(
+          isEnzymeTestkitExists(
+            <Header title="dummy" />,
+            enzymeHeaderTestkitFactory,
+            mount,
+          ),
+        ).toBe(true);
+      });
+    });
+  }
 });

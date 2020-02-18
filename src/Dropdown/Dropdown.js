@@ -1,63 +1,156 @@
 import classNames from 'classnames';
-import isundefined from 'lodash.isundefined';
+import defaultTo from 'lodash/defaultTo';
+import isEqual from 'lodash/isEqual';
+import sortBy from 'lodash/sortBy';
+import { allValidators, extendPropTypes } from '../utils/propTypes';
+
 import InputWithOptions from '../InputWithOptions/InputWithOptions';
+import DropdownLayout from '../DropdownLayout';
 import styles from './Dropdown.scss';
 
-class Dropdown extends InputWithOptions {
+const NO_SELECTED_ID = null;
 
+class Dropdown extends InputWithOptions {
   constructor(props) {
     super(props);
-    this.update(props, {isFirstTime: true});
+
+    this.state = {
+      value: '',
+      selectedId: NO_SELECTED_ID,
+
+      ...Dropdown.getNextState(
+        props,
+        defaultTo(props.selectedId, props.initialSelectedId),
+      ),
+    };
   }
 
-  update(props, {isFirstTime}) {
-    let value = '', selectedId = -1;
-    if (!isundefined(props.selectedId)) {
-      const option = props.options.find(option => {
-        return option.id === props.selectedId;
+  isSelectedIdControlled() {
+    return typeof this.props.selectedId !== 'undefined';
+  }
+
+  static isOptionsEqual(optionsA, optionsB) {
+    return isEqual(sortBy(optionsA, 'id'), sortBy(optionsB, 'id'));
+  }
+
+  getSelectedId() {
+    return this.isSelectedIdControlled()
+      ? this.props.selectedId
+      : this.state.selectedId;
+  }
+
+  _onInputClicked(event) {
+    if (
+      this.state.showOptions &&
+      Date.now() - this.state.lastOptionsShow > 200
+    ) {
+      this.hideOptions();
+    } else {
+      this.showOptions();
+    }
+
+    if (this.props.onInputClicked) {
+      this.props.onInputClicked(event);
+    }
+  }
+
+  /**
+   * Updates the value by the selectedId.
+   * If selectedId is not found in options, then value is NOT changed.
+   */
+  static getNextState(props, selectedId) {
+    if (typeof selectedId !== 'undefined') {
+      const option = props.options.find(_option => {
+        return _option.id === selectedId;
       });
 
       if (option) {
-        value = props.valueParser(option);
-        selectedId = option.id;
+        const value = props.valueParser(option) || '';
+        return { value, selectedId };
       }
     }
 
-    if (isFirstTime) {
-      this.state = {value, selectedId};
-    } else {
-      this.setState({value, selectedId});
-    }
+    return { value: '', selectedId: NO_SELECTED_ID };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.selectedId !== nextProps.selectedId) {
-      this.update(nextProps, {isFirstTime: false});
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (
+      nextProps.selectedId !== this.props.selectedId ||
+      !Dropdown.isOptionsEqual(this.props.options, nextProps.options)
+    ) {
+      this.setState(
+        Dropdown.getNextState(
+          nextProps,
+          nextProps.selectedId,
+          this.state.selectedId,
+        ),
+      );
     }
   }
 
   inputClasses() {
-    const classes = {[styles.readOnly]: true};
-    classes[styles.noRightBorderRadius] = this.props.noRightBorderRadius;
-    classes[styles.noBorder] = this.props.noBorder;
-    return classNames(classes);
+    return classNames(styles.showPointer, {
+      [styles.noBorder]: this.props.noBorder,
+    });
   }
 
   dropdownAdditionalProps() {
-    return {selectedId: this.state.selectedId, value: this.state.value};
+    return {
+      selectedId: this.getSelectedId(),
+      value: this.state.value,
+      tabIndex: -1,
+    };
   }
 
   inputAdditionalProps() {
-    return {readOnly: true, value: this.state.value};
+    return {
+      readOnly: false,
+      disableEditing: true,
+      value: this.state.value,
+    };
   }
 
   _onSelect(option) {
-    this.setState({value: this.props.valueParser(option), selectedId: option.id});
+    if (!this.isSelectedIdControlled()) {
+      this.setState({
+        value: this.props.valueParser(option),
+        selectedId: option.id,
+      });
+    }
     super._onSelect(option);
+  }
+
+  _onChange(event) {
+    this.setState({ value: event.target.value });
+    super._onChange(event);
   }
 }
 
-Dropdown.propTypes = InputWithOptions.propTypes;
+Dropdown.propTypes = {
+  ...InputWithOptions.propTypes,
+  /** Sets the selected option id. (Implies Controlled mode) */
+  selectedId: DropdownLayout.propTypes.selectedId,
+  /** An initial selected option id. (Implies Uncontrolled mode) */
+  initialSelectedId: DropdownLayout.propTypes.selectedId,
+};
+
+extendPropTypes(Dropdown, {
+  selectedId: allValidators(
+    DropdownLayout.propTypes.selectedId,
+    (props, propName) => {
+      if (
+        props[propName] !== undefined &&
+        props['initialSelectedId'] !== undefined
+      ) {
+        return new Error(
+          `'selectedId' and 'initialSelectedId' cannot both be used at the same time.`,
+        );
+      }
+    },
+  ),
+});
+
 Dropdown.defaultProps = InputWithOptions.defaultProps;
+Dropdown.displayName = 'Dropdown';
 
 export default Dropdown;

@@ -1,0 +1,61 @@
+import {BaseUniDriver} from 'wix-ui-test-utils/base-driver';
+import {BaseDriver} from 'wix-ui-test-utils/driver-factory';
+import {ReactWrapper} from 'enzyme';
+import AvatarDriver from '../src/Avatar/Avatar.uni.driver';
+import {BadgeDriver} from '../src/Badge/Badge.driver';
+import {BadgeSelectDriver} from '../src/BadgeSelect/BadgeSelect.driver';
+import {BoxDriver} from '../src/Box/Box.uni.driver';
+import {CustomModalDriver} from '../src/CustomModal/CustomModal.uni.driver';
+import {SocialButtonDriver} from '../src/SocialButton/SocialButton.uni.driver'
+import {TooltipDriver as TooltipUniDriver} from '../src/Tooltip/TooltipNext/Tooltip.uni.driver';
+import {TimeTableDriver} from '../src/TimeTable/TimeTable.uni.driver';
+import {TooltipDriver} from '../src/Tooltip/Tooltip.driver';
+import {InfoIconDriver} from '../src/InfoIcon/InfoIcon.uni.driver';
+import {ImageDriver} from '../src/Image/Image.uni.driver';
+import {ListItemSectionDriver} from '../src/ListItemSection/ListItemSection.uni.driver';
+import {ListItemSelectDriver} from '../src/ListItemSelect/ListItemSelect.uni.driver';
+import {SidePanelDriver} from '../src/SidePanel/SidePanel.uni.driver';
+
+declare namespace EnzymeTestkit {
+  type EnzymeTestkitFactory<T extends BaseDriver> = (
+    params: EnzymeTestkitParams
+  ) => T;
+
+  type EnzymeUniTestkitFactory<T extends BaseUniDriver> = (
+    params: EnzymeTestkitParams
+  ) => T;
+
+  interface EnzymeTestkitParams {
+    wrapper: ReactWrapper;
+    dataHook: string;
+  }
+<%
+  const typed = {
+    Avatar: 'EnzymeUniTestkitFactory<AvatarDriver>',
+    Badge: 'EnzymeTestkitFactory<BadgeDriver>',
+    BadgeSelect: 'EnzymeTestkitFactory<BadgeSelectDriver>',
+    Box: 'EnzymeUniTestkitFactory<BoxDriver>',
+    CustomModal: 'EnzymeUniTestkitFactory<CustomModalDriver>',
+    InfoIcon: 'EnzymeUniTestkitFactory<InfoIconDriver>',
+    SocialButton: 'EnzymeUniTestkitFactory<SocialButtonDriver>',
+    TimeTable: 'EnzymeUniTestkitFactory<TimeTableDriver>',
+    ListItemSection: 'EnzymeUniTestkitFactory<ListItemSectionDriver>',
+    ListItemSelect: 'EnzymeUniTestkitFactory<ListItemSelectDriver>',
+    Image: 'EnzymeUniTestkitFactory<ImageDriver>',
+    SidePanel: 'EnzymeUniTestkitFactory<SidePanelDriver>',
+  };
+
+  components
+  .filter(component => !component.noTestkit)
+  .filter(component => !component.manualExport)
+  .map(component => {
+    const camelName = utils.toCamel(component.name);
+    const testkitName = camelName + 'TestkitFactory';
+    const type = typed[component.name] || 'any';
+%>
+  export const <%= testkitName %>: <%- type %>;<% }) %>
+  export const tooltipTestkitFactory: EnzymeTestkitFactory<TooltipDriver>;
+  export const TooltipTestkit: EnzymeUniTestkitFactory<TooltipUniDriver>;
+}
+
+export = EnzymeTestkit;

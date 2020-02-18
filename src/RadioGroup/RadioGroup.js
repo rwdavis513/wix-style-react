@@ -1,9 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import uniqueId from 'lodash.uniqueid';
+import uniqueId from 'lodash/uniqueId';
+import classNames from 'classnames';
+
 import RadioButton from './RadioButton/RadioButton';
+import deprecationLog from '../utils/deprecationLog';
 import styles from './RadioGroup.scss';
-import WixComponent from '../WixComponent';
+import WixComponent from '../BaseComponents/WixComponent';
 
 /**
  * component for easy radio group creation.
@@ -14,15 +17,40 @@ class RadioGroup extends WixComponent {
   constructor(props) {
     super(props);
     this.name = uniqueId('RadioGroup_');
+    this.logDeprecations(props);
+  }
+
+  logDeprecations(props) {
+    if (props.type === 'button') {
+      deprecationLog(
+        `RadioGroup's prop "type" with value "button" is deprecated. Use 'SegmentedToggle' component instead.`,
+      );
+    }
   }
 
   render() {
-    const {onChange, disabled, disabledRadios, value, vAlign, display, type, spacing} = this.props;
-    const style = {marginBottom: display === 'vertical' && spacing};
-
+    const {
+      onChange,
+      disabled,
+      disabledRadios,
+      value,
+      vAlign,
+      display,
+      type,
+      spacing,
+      lineHeight,
+      selectionArea,
+    } = this.props;
     return (
-      <div className={styles[display]}>
-        {React.Children.map(this.props.children, radio => (
+      <div
+        className={classNames(styles[display], {
+          [styles.buttonType]: type === 'button',
+          [styles.selectionAreaAlways]: selectionArea === 'always',
+          [styles.selectionAreaHover]: selectionArea === 'hover',
+          [styles.vertical]: display === 'vertical',
+        })}
+      >
+        {React.Children.map(this.props.children, (radio, index) => (
           <RadioGroup.Radio
             dataHook={radio.props.dataHook}
             value={radio.props.value}
@@ -30,10 +58,18 @@ class RadioGroup extends WixComponent {
             onChange={onChange}
             vAlign={vAlign}
             type={type}
-            disabled={disabled || disabledRadios.indexOf(radio.props.value) !== -1}
+            disabled={
+              disabled || disabledRadios.indexOf(radio.props.value) !== -1
+            }
             checked={radio.props.value === value}
-            style={style}
-            >
+            style={
+              display === 'vertical' && index > 0 ? { marginTop: spacing } : {}
+            }
+            selectionArea={selectionArea}
+            icon={radio.props.icon}
+            lineHeight={lineHeight}
+            content={radio.props.content}
+          >
             {radio.props.children}
           </RadioGroup.Radio>
         ))}
@@ -50,27 +86,38 @@ RadioGroup.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 
   /** the values of the disabled radio buttons */
-  disabledRadios: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+  disabledRadios: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  ),
 
   /** Positioning of the radio bottom compared to the label */
   vAlign: PropTypes.oneOf(['center', 'top']),
 
   /** Make the entire control disabled */
-  disabled: PropTypes.string,
+  disabled: PropTypes.bool,
 
   /** Decided which type of child controls to render */
-  type: PropTypes.string,
+  type: PropTypes.oneOf(['default', 'button']),
 
   /** Display direction of the radios */
   display: PropTypes.oneOf(['vertical', 'horizontal']),
+
+  /** Selection area emphasises the clickable area, none means no emphasis, hover is when the mouse is on the component, and always will show constantly */
+  selectionArea: PropTypes.oneOf(['none', 'hover', 'always']),
+
   children: PropTypes.arrayOf((propValue, key) => {
-    if (propValue[key].type.name !== 'RadioButton') {
-      return new Error(`RadioGroup: Invalid Prop children was given. Validation failed on child number ${key}`);
+    if (propValue[key].type.displayName !== RadioButton.displayName) {
+      return new Error(
+        `RadioGroup: Invalid Prop children was given. Validation failed on child number ${key}`,
+      );
     }
   }),
 
   /** Vertical spacing between radio buttons */
-  spacing: PropTypes.string
+  spacing: PropTypes.string,
+
+  /** Text line height */
+  lineHeight: PropTypes.string,
 };
 
 RadioGroup.defaultProps = {
@@ -79,7 +126,9 @@ RadioGroup.defaultProps = {
   value: '',
   vAlign: 'center',
   display: 'vertical',
-  spacing: '12px'
+  lineHeight: '24px',
+  type: 'default',
+  selectionArea: 'none',
 };
 
 RadioGroup.Radio = RadioButton;

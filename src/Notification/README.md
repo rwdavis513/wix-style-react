@@ -1,39 +1,37 @@
-# Notification component
+`<Notification>` is a compound component and requires `<Notification.TextLabel/>` to be used as children.
 
-> A dropping down notification.
+<details>
+  <summary>
+    `<Notification.TextLabel/>` (required)
+  </summary>
 
-## Properties
+  Use this component to display the notification message
 
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| show | boolean | false | - | Show or hide the notification triggered by user |
-| theme | string (standard, error, success, warning) | standard | - | The theme color of the notification |
-| size | string (small, big) | small | - | The size of the notification. big for a full action button |
-| type | string (global, local, sticky) | global | - | global pushes the content while local is above it and fades after timeout. sticky fixes the content at the top of the screen |
-| timeout | number | 6000 | - | time in msec for local notification to disappear (will be ignored in global notification) |
-| zIndex | number | - | - | z-index property |
-| onClose | func | - | - | callback when the notification is close, will pass a 'reason' var that can one of 'hide-by-close-click' or 'hide-by-timer' |  
+  | propName   | propType   | defaultValue   | isRequired   | description         |
+  | ---------- | ---------- | -------------- | ------------ | -------------       |
+  | children   | string     | -              | -            | The text to display |
+</details>
 
-## Notification.TextLabel (required)
-> Use this component to display the notification message
+<details>
+  <summary>
+    `<Notification.CloseButton/>`
+  </summary>
 
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| children | string | - | - | The text to display |
+  Use this component to display the close button
+</details>
 
-## Notification.ActionButton (optional)
-> Use this component to supply an action button for the notification
+<details>
+  <summary>
+    `<Notification.ActionButton/>`
+  </summary>
 
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| children | string | - | - | The text to display |
-| type | string (button, textLink) | - | button | A Button component or TextLink component |
-| onClick | function | - | e => e.preventDefault() | - |
-| link | string | - | - | A url to navigate to on click |
+  Use this component to supply an action button for the notification
 
-## Notification.CloseButton (required)
-> Use this component to display the close button
-
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| none | - | - | - | - |
+  | propName   | propType                  | defaultValue   | isRequired              | description                              |
+  | ---------- | ----------                | -------------- | ------------            | -------------                            |
+  | children   | string                    | -              | -                       | The text to display                      |
+  | type       | string (button, textLink) | -              | button                  | A Button component or TextLink component |
+  | onClick    | function                  | -              | e => e.preventDefault() | -                                        |
+  | link       | string                    | -              | -                       | A url to navigate to on click            |
+  | target   | string                    | `_self`              | -                       | The `target` attribute to be set on the `a` tag (for `textLink` type)                      |
+</details>

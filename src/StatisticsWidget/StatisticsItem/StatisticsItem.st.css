@@ -1,0 +1,94 @@
+:import {
+  -st-from: "../../Tooltip/TooltipNext/Tooltip.st.css";
+  -st-default: Tooltip;
+}
+
+:import {
+  -st-from: "wix-ui-core/hocs.st.css";
+  -st-named: Focusable;
+}
+
+:import {
+  -st-from: "../../Foundation/stylable/colors.st.css";
+  -st-named: B50, D60, F00;
+}
+
+:vars {
+  gap: 30px;
+}
+
+.item {
+  -st-extends: Focusable;
+  -st-states: clickable;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  flex: 1;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: value(gap);
+  white-space: nowrap;
+  transition: background-color .3s ease-in-out;
+}
+
+.item:clickable {
+  cursor: pointer;
+}
+
+.item:clickable:hover {
+  background-color: value(B50);
+}
+
+.item:focus {
+  outline: none;
+}
+.item:focus-visible {
+  border-radius: 2px;
+  box-shadow: 0 0 0 3px value(F00);
+}
+
+.item:not(:first-child)::before {
+  position: absolute;
+  top: value(gap);
+  left: 0;
+  bottom: value(gap);
+  width: 1px;
+  content: '';
+  background-color: value(D60);
+}
+
+.item:clickable:not(:first-child):hover::before,
+.item:clickable:hover + .item::before
+{
+  top: 0;
+  bottom: 0;
+}
+
+.description {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.info {
+  display: block;
+}
+
+.percentage {
+  margin-top: auto;
+}
+
+.percentageInner {
+  height: 12px;
+}
+
+.trendIndicator {
+  display: inline-block;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.tooltip {
+ -st-extends: Tooltip;
+ width: auto;
+}

@@ -1,47 +1,76 @@
+@import './common.scss';
 @import '../common.scss';
-
-$zIndex: 2000;
-$font-size: 14px;
-$line-height: 1.29;
-$padding: 18px;
-$border-radius: 8px;
-$shadow-color: rgba(0, 0, 0, 0.2);
-$shadow-color-arrow: rgba(0, 0, 0, .1);
-$shadow: 0 0 11px 0 $shadow-color;
+@import '../ZIndex.scss';
 
 .root {
   position: absolute;
-  z-index: $zIndex;
+  z-index: $zIndex_TOOLTIP;
+  top: 0;
+  left: -9000px;
+}
+
+@mixin arrow($side, $color) {
+  @if $side == 'right' {
+    border-top: 5px solid $color;
+    border-left: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 5px solid $color;
+  }
+  @if $side == 'left' {
+    border-top: 5px solid transparent;
+    border-left: 5px solid $color;
+    border-bottom: 5px solid $color;
+    border-right: 5px solid transparent;
+  }
+  @if $side == 'top' {
+    border-top: 5px solid $color;
+    border-left: 5px solid $color;
+    border-bottom: 5px solid transparent;
+    border-right: 5px solid transparent;
+  }
+  @if $side == 'bottom' {
+    border-bottom: 5px solid $color;
+    border-right: 5px solid $color;
+    border-top: 5px solid transparent;
+    border-left: 5px solid transparent;
+  }
 }
 
 .tooltip {
   @include FontRoman;
+  @include popoverTheme;
+
   position: relative;
   display: inline-block;
-  border-radius: $border-radius;
-  padding: $padding;
-  font-size: $font-size;
-  line-height: $line-height;
-  box-shadow: $shadow;
+  padding: 12px 24px;
+  box-sizing: border-box;
+  font-size: 14px;
+  line-height: 1.29;
+
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
+
   &.light {
     color: $D10;
     background: $D80;
   }
+
   &.dark {
     color: $D80;
     background: $D10;
   }
+
   &.error {
     color: white;
     background: $R00;
   }
+
   &.normal {
     font-size: 14px;
     line-height: 18px;
     text-align: center;
   }
+
   &.large {
     font-size: 16px;
     line-height: 24px;
@@ -49,48 +78,115 @@ $shadow: 0 0 11px 0 $shadow-color;
   }
 }
 
+.popover-tooltip-content {
+  overflow: hidden;
+  word-wrap: normal;
+  vertical-align: top;
+  padding: 0;
+}
+
 .arrow {
   $arrow-size: 10px;
+  $shadow-color-arrow: rgba(0, 0, 0, .1);
+  $arrowBottomShadow: 3px 3px 6px $shadow-color-arrow;
+  $arrowTopShadow: -3px -3px 6px $shadow-color-arrow;
+  $arrowRightShadow: 3px -3px 6px $shadow-color-arrow;
+  $arrowLeftShadow: -3px 3px 6px $shadow-color-arrow;
+
   position: absolute;
   height: $arrow-size;
   width: $arrow-size;
   transform: rotateZ(45deg);
   background: inherit;
-  &.bottom, &.top {
+
+  box-sizing: border-box;
+  background: transparent;
+
+
+  &.light.top {
+    @include arrow('top', $D80)
+  }
+  &.light.bottom {
+    @include arrow('bottom', $D80)
+  }
+  &.light.right {
+    @include arrow('right', $D80)
+  }
+  &.light.left {
+    @include arrow('left', $D80)
+  }
+
+  &.dark.top {
+    @include arrow('top', $D10)
+  }
+  &.dark.bottom {
+    @include arrow('bottom', $D10)
+  }
+  &.dark.right {
+    @include arrow('right', $D10)
+  }
+  &.dark.left {
+    @include arrow('left', $D10)
+  }
+
+  &.error.top {
+    @include arrow('top', $R00)
+  }
+  &.error.bottom {
+    @include arrow('bottom', $R00)
+  }
+  &.error.right {
+    @include arrow('right', $R00)
+  }
+  &.error.left {
+    @include arrow('left', $R00)
+  }
+
+  &.bottom,
+  &.top {
     left: 50%;
     margin-left: -$arrow-size/2;
   }
+
   &.bottom {
-    bottom: -4px;
-    box-shadow: 3px 3px 6px $shadow-color-arrow;
+    bottom: -5px;
+    box-shadow: $arrowBottomShadow;
   }
+
   &.top {
-    top: -4px;
-    box-shadow: -3px -3px 6px $shadow-color-arrow;
+    top: -5px;
+    box-shadow: $arrowTopShadow;
   }
-  &.left, &.right {
+
+  &.left,
+  &.right {
     top: 50%;
     margin-top: -5px;
   }
+
   &.right {
     right: -5px;
-    box-shadow: 3px -3px 6px $shadow-color-arrow;
+    box-shadow: $arrowRightShadow;
   }
+
   &.left {
     left: -5px;
-    box-shadow: -3px 3px 6px $shadow-color-arrow;
+    box-shadow: $arrowLeftShadow;
   }
 }
 
 .fadeIn { animation: fadeIn .3s cubic-bezier(0.23, 1, 0.32, 1) both; }
 
-.bounce-on-top, .bounce-on-bottom { animation: bounceVertically   1s ease infinite; }
-.bounce-on-left, .bounce-on-right { animation: bounceHorizontally 1s ease infinite; }
+.bounce-top,
+.bounce-bottom { animation: bounceVertically 1s ease infinite; }
 
-.bounce-on-top,
-.bounce-on-bottom,
-.bounce-on-left,
-.bounce-on-right {
+.bounce-left,
+.bounce-right { animation: bounceHorizontally 1s ease infinite; }
+
+.bounce-top,
+.bounce-bottom,
+.bounce-left,
+.bounce-right {
   &:hover {
     animation-play-state: paused;
     -webkit-animation-play-state: paused;

@@ -1,7 +1,38 @@
 @import '../common';
 
 .input {
-  min-width: 100px;
+  flex-grow:1;
+
+  .disabled & {
+    visibility: hidden;
+  }
+}
+
+// Override <Input>'s default focus style
+.input div {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.input div:hover {
+  background-color: transparent !important;
+}
+
+.emptyInput {
+  width: 100%;
+}
+
+.readOnly {
+  position: relative;
+  padding-right: 55px;
+}
+
+.inputSuffix {
+  position: absolute;
+  top: 0;
+  right: 6px;
+  height: 34px;
+  box-sizing: border-box;
 }
 
 .hiddenDiv {
@@ -12,31 +43,95 @@
   height: 0;
 }
 
-.tagsContainer {
+.tag {
+  margin-left: 6px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+.inputWithTagsContainer {
   width: 100%;
-  @include FontThin();
   border: 1px solid $B30;
   border-radius: 6px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  overflow: none;
-  color: $D30;
-  font-size: 16px;
+  overflow-y: hidden;
+  box-sizing: border-box;
+  user-select: none;
+
+  &.disabled {
+    background-color: $D10-05
+  }
+
+  &:hover:not(.hasFocus):not(.disabled) {
+    background: $B50;
+  }
 }
 
-.tagsContainer div {
-  border: none !important;
-}
-
-.tagsContainer div:hover {
-  background-color: transparent;
+.hasMaxHeight {
+  overflow-y: auto;
 }
 
 .error {
   border-color: $paletteR1;
+  position: relative;
+  padding-right: 55px;
+}
+
+.warning {
+  border-color: $paletteY1;
+  position: relative;
+  padding-right: 55px;
 }
 
 .disabled {
-  border-color: $D55;
+  border-color: $D10-30;
+}
+
+.hasFocus {
+  border-color: $B20;
+
+  @include FocusBox;
+
+  &.error {
+    @include FocusBoxError;
+  }
+
+  &.warning {
+    @include FocusBoxWarning;
+  }
+}
+
+.customSuffix {
+  margin: 0 6px;
+}
+
+.tagsContainer {
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+
+  .draggedTag {
+    background-color: transparentize($B30, 0.2);
+  }
+
+  .draggedTagPlaceholder {
+    background-color: $D60;
+
+    &:hover {
+      background-color: $D60
+    }
+
+    * {
+      visibility: hidden;
+    }
+  }
+}
+
+@include withRTL() {
+  .tag {
+    margin-left: 0px;
+    margin-right: 7px;
+  }
 }

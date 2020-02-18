@@ -1,32 +1,94 @@
-import React from 'react';
-import ReactTestUtils from 'react-dom/test-utils';
 import inputDriverFactory from '../Input/Input.driver';
 import dropdownLayoutDriverFactory from '../DropdownLayout/DropdownLayout.driver';
-import ReactDOM from 'react-dom';
+import popoverDriverFactory from '../Popover/Popover.driver';
 
-const inputWithOptionsDriverFactory = ({element, wrapper, component}) => {
+const inputWithOptionsDriverFactory = ({ element }) => {
+  const dropdownLayoutSelector = `[data-hook="dropdown-layout-wrapper"]`;
+  const inputWrapperSelector = '[data-input-parent]';
+  const popoverTestkit = () => popoverDriverFactory({ element });
 
-  const inputWrapper = element.childNodes[0];
-  const inputDriver = inputDriverFactory({element: inputWrapper.childNodes[0], wrapper: inputWrapper});
-  const dropdownLayoutDriver = dropdownLayoutDriverFactory({element: element.childNodes[1].childNodes[0], wrapper});
+  const inputWrapper = () =>
+    element &&
+    element.querySelector(`${inputWrapperSelector} > *:first-child `);
+
+  const dropdownLayoutWrapper = () =>
+    popoverTestkit()
+      .getContentElement()
+      .querySelector(dropdownLayoutSelector).childNodes[0];
+
+  const inputDriver = inputDriverFactory({
+    element: inputWrapper(),
+    wrapper: inputWrapper(),
+  });
+
+  const dropdownLayoutTestkit = () =>
+    dropdownLayoutDriverFactory({
+      element: dropdownLayoutWrapper(),
+    });
 
   const driver = {
     exists: () => !!element,
-    inputWrapper: () => inputWrapper,
-    focus: () => ReactTestUtils.Simulate.focus(inputWrapper),
-    blur: () => dropdownLayoutDriver.mouseClickOutside(),
-    pressDownKey: () => ReactTestUtils.Simulate.keyDown(inputWrapper, {key: 'ArrowDown'}),
-    pressUpKey: () => ReactTestUtils.Simulate.keyDown(inputWrapper, {key: 'ArrowUp'}),
-    pressAnyKey: () => ReactTestUtils.Simulate.keyDown(inputWrapper, {key: 'Any'}),
-    pressEnterKey: () => ReactTestUtils.Simulate.keyDown(inputWrapper, {key: 'Enter'}),
-    pressTabKey: () => ReactTestUtils.Simulate.keyDown(inputWrapper, {key: 'Tab'}),
-    pressEscKey: () => ReactTestUtils.Simulate.keyDown(inputWrapper, {key: 'Escape'}),
-    setProps: props => {
-      const ClonedWithProps = React.cloneElement(component, Object.assign({}, component.props, props), ...(component.props.children || []));
-      ReactDOM.render(<div ref={r => element = r}>{ClonedWithProps}</div>, wrapper);
-    }
+    /** Select an option by id. (If dropdown options is not opened yet, this will open it and click on the option) */
+    selectOptionById: id => {
+      inputDriver.focus();
+      inputDriver.keyDown('ArrowDown');
+      dropdownLayoutTestkit()
+        .optionById(id)
+        .click();
+    },
+    isReadOnly: () =>
+      inputDriver.getReadOnly() &&
+      inputWrapper().className.includes('readonly'),
+    isEditable: () => !inputDriver.getReadOnly() && !inputDriver.getDisabled(),
+    isDisabled: () => !!inputDriver.getDisabled(),
+    inputWrapper: () => inputWrapper(),
+    focus: () => inputDriver.focus(),
+    blur: () => dropdownLayoutTestkit().mouseClickOutside(),
+    pressKey: key => inputDriver.keyDown(key),
+    isMenuOpen: () => popoverTestkit().isContentElementExists(),
+    outsideClick: () => popoverTestkit().clickOutside(),
+    isOptionWrappedToHighlighter: optionId => {
+      inputDriver.keyDown('ArrowDown');
+      const { element: optionElm } = dropdownLayoutTestkit().optionById(
+        optionId,
+      );
+      return !!optionElm().querySelector(`[data-hook=highlighter-${optionId}]`);
+    },
   };
-  return {driver, inputDriver, dropdownLayoutDriver};
+
+  const dropdownLayoutDummy = dropdownLayoutDriverFactory({
+    element: document.body,
+  });
+
+  return {
+    exists: () => driver.exists(),
+    driver,
+    inputDriver,
+    dropdownLayoutDriver: Object.keys(dropdownLayoutDummy).reduce(
+      (prev, current) => {
+        return {
+          ...prev,
+          [current]: args => {
+            if (current === 'isShown' || current === 'exists') {
+              return popoverTestkit().isContentElementExists();
+            }
+
+            if (current === 'getDropdown' || current === 'getDropdownItem') {
+              return popoverTestkit().isContentElementExists()
+                ? dropdownLayoutTestkit()[current](args)
+                : undefined;
+            }
+
+            !popoverTestkit().isContentElementExists() &&
+              inputDriver.keyDown('ArrowDown');
+
+            return dropdownLayoutTestkit()[current](args);
+          },
+        };
+      },
+      {},
+    ),
+  };
 };
 
 export default inputWithOptionsDriverFactory;

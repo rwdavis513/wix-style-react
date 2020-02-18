@@ -1,0 +1,61 @@
+import 'regenerator-runtime/runtime';
+import {
+  protractorTestkitFactoryCreator,
+  protractorUniTestkitFactoryCreator,
+} from 'wix-ui-test-utils/protractor';
+
+// here for historical reasons, should probably deprecate it
+export {
+  waitForVisibilityOf,
+  scrollToElement,
+} from 'wix-ui-test-utils/protractor';
+
+import tooltipDriverFactory from '../src/Tooltip/Tooltip.protractor.driver';
+import { tooltipDriverFactory as tooltipNextDriverFactory } from '../src/Tooltip/TooltipNext/Tooltip.uni.driver';
+
+export const tooltipTestkitFactory = protractorTestkitFactoryCreator(
+  tooltipDriverFactory,
+);
+
+export const TooltipTestkit = protractorUniTestkitFactoryCreator(
+  tooltipNextDriverFactory,
+);
+const load = module => {
+  const MODULE_META_KEYS = ['__esModule'];
+
+  const moduleFields = Object.keys(module).reduce((total, key) => {
+    if (!MODULE_META_KEYS.includes(key)) {
+      return total.concat(module[key]);
+    }
+    return total;
+  }, []);
+
+  let defaultOrFirstExport;
+  if (module.default) {
+    defaultOrFirstExport = module.default;
+  } else if (moduleFields.length === 1) {
+    defaultOrFirstExport = moduleFields[0];
+  } else {
+    defaultOrFirstExport = module;
+  }
+  return defaultOrFirstExport;
+};
+<%
+  components
+  .filter(component => !component.noTestkit)
+  .filter(component => !component.noProtractorTestkit)
+  .filter(component => !component.manualExport)
+  .map(component => {
+    const camelName = utils.toCamel(component.name);
+    const driverFactory = camelName + 'DriverFactory';
+    const driverPath = component.protractorTestkitPath || component.testkitPath || [
+      '../src',
+      component.name,
+      component.name + (component.protractorLegacyTestkit ? '.protractor.driver' : '.uni.driver'),
+    ].join('\/');
+
+    const testkitName = camelName + 'TestkitFactory';
+    const factoryName = component.protractorLegacyTestkit ? 'protractorTestkitFactoryCreator' : 'protractorUniTestkitFactoryCreator';
+    const exportName = component.protractorTestkitExportName || testkitName;
+%>
+export const <%= exportName %> = <%= factoryName %>(load(require('<%= driverPath %>')));<% }) %>

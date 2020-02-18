@@ -1,0 +1,155 @@
+@import '../common';
+
+$sidebarWidth: 228px;
+$mainBackgroundColor: #23263c;
+
+$darkScrollbarThumbHoverColor : $D80-66;
+$darkScrollbarThumbColor: $D80-42;
+$lightScrollbarThumbHoverColor: $D10-66;
+$lightScrollbarThumbColor: $D10-42;
+
+@keyframes inFromLeft {
+  from {
+    left: -$sidebarWidth;
+  }
+  to {
+    left: 0;
+  }
+}
+
+@keyframes inFromRight {
+  from {
+    left: $sidebarWidth;
+  }
+  to {
+    left: 0;
+  }
+}
+
+@keyframes outToRight {
+  from {
+    left: 0;
+  }
+  to {
+    left: $sidebarWidth;
+  }
+}
+
+@keyframes outToLeft {
+  from {
+    left: 0;
+  }
+  to {
+    left: -$sidebarWidth;
+  }
+}
+
+.sideBar {
+  background-color: $mainBackgroundColor;
+  width: $sidebarWidth;
+  height: 100%;
+  position: relative;
+
+  overflow: hidden;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  z-index: 2;
+  margin-left: 0;
+  margin-right: 0;
+
+  &.light {
+    background-color: $D80;
+    border-right: 1px solid $D60;
+  }
+
+  transition-property: margin-left, margin-right;
+  transition-duration: 0.6s;
+}
+
+.hiddenSideBar {
+  margin-left: -$sidebarWidth;
+  margin-right: 0;
+
+  [dir='rtl'] & {
+    margin-left: 0;
+    margin-right: -$sidebarWidth;
+  }
+}
+
+.content {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+}
+
+.slider {
+  position: absolute;
+  width: $sidebarWidth;
+  overflow-y: auto;
+  height: 100%;
+
+  animation-duration: 0.3s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-in-out;
+}
+
+.slider::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 8px;
+}
+
+.slider::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: $darkScrollbarThumbColor;
+}
+
+.slider.light::-webkit-scrollbar-thumb {
+  background-color: $lightScrollbarThumbColor;
+}
+
+.slider::-webkit-scrollbar-thumb:hover {
+  border-radius: 4px;
+  background: $darkScrollbarThumbHoverColor;
+}
+
+.slider.light::-webkit-scrollbar-thumb:hover {
+  background: $lightScrollbarThumbHoverColor;
+}
+
+.sliderInFromRight {
+  animation-name: inFromRight;
+
+  [dir='rtl'] & {
+    animation-name: inFromLeft;
+  }
+}
+
+.sliderOutToRight {
+  animation-name: outToRight;
+
+  [dir='rtl'] & {
+    animation-name: outToLeft;
+  }
+}
+
+.sliderInFromLeft {
+  animation-name: inFromLeft;
+
+  [dir='rtl'] & {
+    animation-name: inFromRight;
+  }
+}
+
+.sliderOutToLeft {
+  animation-name: outToLeft;
+
+  [dir='rtl'] & {
+    animation-name: outToRight;
+  }
+}

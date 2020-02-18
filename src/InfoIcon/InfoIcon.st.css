@@ -1,0 +1,14 @@
+:import {
+  -st-from: "../Foundation/stylable/colors.st.css";
+  -st-named: B10;
+}
+
+.root {
+  display: inline-block;
+  line-height: 0;
+  color: value(B10);
+}
+
+.icon {
+  vertical-align: middle;
+}

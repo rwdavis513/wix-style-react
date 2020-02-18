@@ -1,0 +1,6 @@
+.root {
+  -st-states: noPadding;
+  height: 100%;
+  flex: 1;
+  padding: 24px;
+}

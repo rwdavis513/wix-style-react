@@ -6,6 +6,7 @@
 
 | method | arguments | returned value | description |
 |--------|-----------|----------------|-------------|
+| getRadioAtIndex | index | - | get RadioButton element in a group by it's index |
 | selectByIndex | index | - | click on RadioButton in a group by it's index |
 | selectByValue | index | - | click on RadioButton in a group by it's value |
 | getClassOfLabelAt | index | string | returns RadioButton class by it's index |
@@ -33,7 +34,7 @@
   ***************/
 
   const dataHook = 'myDataHook';
-  const wrapper = mount(<div/><RadioGroup dataHook={dataHook}/></div>);
+  const wrapper = mount(<div><RadioGroup dataHook={dataHook}/></div>);
   const testkit = enzymeRadioGroupTestkitFactory({wrapper, dataHook});
 
   //Do tests
@@ -46,7 +47,7 @@
   const div = document.createElement('div');
   const dataHook = 'myDataHook';
   const wrapper = div.appendChild(
-    ReactTestUtils.renderIntoDocument(<div/><RadioGroup dataHook={dataHook}/></div>, {dataHook})
+    ReactTestUtils.renderIntoDocument(<div><RadioGroup dataHook={dataHook}/></div>, {dataHook})
   );
   const testkit = radioGroupTestkitFactory({wrapper, dataHook});
 

@@ -1,0 +1,205 @@
+:import {
+  -st-from: '../Foundation/stylable/colors.st.css';
+  -st-named: B10, B20, B40, B50, B60, D10-05, D10-30, D80, F00, R10, R30;
+}
+
+:import {
+  -st-from: 'wix-ui-core/hocs.st.css';
+  -st-named: Focusable;
+}
+
+.root {
+  -st-extends: Focusable;
+  -st-states: valign(enum(center, top)),
+    selectionarea(enum(none, always, hover)), disabled,
+    selection(enum(unchecked, checked, indeterminate)), checkboxhover, error;
+  display: inline-flex;
+  outline: none;
+
+  /* Sets minimal height for the container in case there's no label */
+  min-height: 24px;
+}
+
+:global([dir='rtl']) .root {
+  direction: rtl;
+}
+
+/* Label */
+.root label {
+  display: flex;
+  cursor: default;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.children {
+  cursor: pointer;
+  padding-left: 12px;
+  width: 100%;
+}
+
+:global([dir='rtl']) .children {
+  padding-left: 0;
+  padding-right: 12px;
+}
+
+.checkbox {
+  position: relative;
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+  border: 1px solid value(B20);
+  background-color: value(D80);
+}
+
+.root:focus-visible .checkbox {
+  outline: none;
+  border-color: value(B10);
+  box-shadow: 0 0 0 3px value(F00);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  color: value(D80);
+  opacity: 0;
+}
+
+.inner > svg {
+  width: 8px;
+  height: 8px;
+}
+
+/* Vertical Align */
+.root:valign(center) .label {
+  align-items: center;
+}
+
+.root:valign(top) .outer {
+  margin-top: 4px;
+  display: flex;
+}
+
+/* Selection Area */
+.root:selectionarea(always) {
+  background-color: value(B60);
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.root:selectionarea(always) {
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.root:selectionarea(always):hover,
+.root:selectionarea(hover):hover {
+  background-color: value(B50);
+}
+
+.root:selectionarea(always) .children,
+.root:selectionarea(hover) .children {
+  padding: 12px 16px 12px 12px;
+}
+
+.root:selectionarea(always) .outer,
+.root:selectionarea(hover) .outer {
+  cursor: pointer;
+  padding: 16px 0 16px 16px;
+}
+
+.root:selectionarea(always) .outer {
+  cursor: pointer;
+  padding: 16px 0 16px 16px;
+}
+
+.root:selectionarea(hover):selection(checked),
+.root:selectionarea(hover):selection(indeterminate),
+.root:selectionarea(always):selection(checked),
+.root:selectionarea(always):selection(indeterminate) {
+  background-color: value(B40);
+}
+
+.root:selectionarea(always):valign(top) .outer {
+  margin-top: 0;
+}
+
+:global([dir='rtl']) .root:selectionarea(always) .children,
+:global([dir='rtl']) .root:selectionarea(hover) .children {
+  padding: 12px 12px 12px 16px;
+}
+
+:global([dir='rtl']) .root:selectionarea(always) .outer,
+:global([dir='rtl']) .root:selectionarea(hover) .outer {
+  padding: 16px 16px 16px 0;
+}
+
+.root:selection(checked) .checkbox,
+.root:selection(indeterminate) .checkbox {
+  border: 1px solid value(B10);
+  background-color: value(B10);
+}
+
+.root:selection(checked) .checkbox .inner,
+.root:selection(indeterminate) .checkbox .inner {
+  opacity: 1;
+}
+
+/* Disabled */
+.root:disabled {
+  pointer-events: none;
+  cursor: default;
+}
+
+.root:disabled .checkbox {
+  border-color: value(D10-30);
+  background-color: value(D10-05);
+}
+
+.root:disabled .checkbox .inner {
+  color: value(D10-30);
+}
+
+.root:disabled:selectionarea(always) {
+  background-color: transparent;
+}
+
+.root:disabled:selectionarea(always) .checkbox,
+.root:disabled:selectionarea(always):selection(checked),
+.root:disabled:selectionarea(always):selection(indeterminate) {
+  background-color: transparent;
+}
+
+.root:disabled:selectionarea(always) {
+  background-color: transparent;
+}
+
+/* Error */
+.root:error .checkbox {
+  border-color: value(R10);
+}
+
+.root:error:focus-visible .checkbox {
+  outline: none;
+  border-color: value(R10);
+  box-shadow: 0 0 0 3px value(R30);
+}
+
+/* Hover */
+.root:selection(unchecked):hover .checkbox {
+  background-color: value(B50);
+}
+
+.root:checkboxhover .checkbox {
+  background-color: value(B50);
+}

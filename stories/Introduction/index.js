@@ -1,21 +1,39 @@
 import React from 'react';
-import {storiesOf} from '@kadira/storybook';
-import Markdown from '../utils/Components/Markdown';
-import Readme from '../../README.md';
-import TestsReadme from '../../TESTS.md';
-import Contribution from '../../CONTRIBUTION.md';
+import { storiesOf } from '@storybook/react';
 
-storiesOf('Introduction', {})
-  .add('Getting started', () => (
-    <div>
-       <Markdown source={Readme}/>
-    </div>
-  )).add('Testing', () => (
-    <div>
-      <Markdown source={TestsReadme}/>
-    </div>
-  )).add('Contribution', () => (
-    <div>
-      <Markdown source={Contribution}/>
-    </div>
-  ));
+import Markdown from 'wix-storybook-utils/Markdown';
+
+import Readme from '../../README.md';
+import TestingReadme from '../../docs/usage/testing.md';
+import TroubleshootingReadme from '../../docs/usage/Troubleshooting.md';
+import UsageWithoutYoshiReadme from '../../docs/usage-without-yoshi.md';
+
+import ComponentsCheatsheet from './Cheatsheet/ComponentsCheatsheet';
+
+import { Category } from '../storiesHierarchy';
+
+storiesOf(Category.GETTINGSTARTED, module).add('Getting started', () => (
+  <Markdown source={Readme} />
+));
+
+storiesOf(Category.GETTINGSTARTED, module).add('Usage Without Yoshi', () => (
+  <Markdown source={UsageWithoutYoshiReadme} />
+));
+
+storiesOf(Category.CHEATSHEET, module).add('Components Cheatsheet', () => (
+  <ComponentsCheatsheet />
+));
+
+storiesOf(Category.TESTING, module).add('Testing', () => (
+  <div style={{ margin: '0 48px', width: '100%', maxWidth: 1161 }}>
+    <Markdown source={TestingReadme} />
+  </div>
+));
+
+storiesOf(Category.TROUBLESHOOTING, module).add('Troubleshooting', () => (
+  <div style={{ margin: '0 48px', width: '100%', maxWidth: 1161 }}>
+    <Markdown source={TroubleshootingReadme} />
+  </div>
+));
+
+//TODO - add contribution docs links here somehow

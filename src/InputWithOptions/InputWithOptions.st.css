@@ -1,0 +1,9 @@
+:import {
+  -st-from: "../DropdownBase/DropdownBase.st.css";
+  -st-default: DropdownBase;
+}
+
+.root {
+  -st-mixin:DropdownBase;
+  display: block;
+}

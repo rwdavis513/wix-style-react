@@ -1,20 +1,42 @@
+@import '../../common.scss';
+
 .label {
   margin-bottom: 6px;
 }
 
-.wrapper {
-}
-
 .inputs{
   display: flex;
+
+  &.hasFocusFirst {
+    .firstinput,.firstDate {
+      z-index: 1;
+      border-right-width: 1px;
+    }
+    .lastinput,.lastDate {
+      border-left-width: 0;
+    }
+  }
+
+  &.hasFocusLast {
+    .lastinput,.lastDate {
+      z-index: 1;
+      border-left-width: 1px;
+    }
+    .firstinput,.firstDate {
+      border-right-width: 0;
+    }
+  }
+
+  &:not(.hasFocusLast) {
+    .lastinput, .lastDate {
+      border-left-width: 0;
+    }
+  }
 }
 
-.firstinput {
-  border-radius: 6px 0 0 6px;
+.firstinput, .lastinput {
   width: 50%;
+  box-sizing: content-box;
 }
 
-.lastinput {
-  border-radius: 0 6px 6px 0;
-  width: 50%;
-}
+

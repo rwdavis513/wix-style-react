@@ -1,44 +1,73 @@
-import React from 'react';
 import ReactTestUtils from 'react-dom/test-utils';
-import ReactDOM from 'react-dom';
-import styles from './InputArea.scss';
-import $ from 'jquery';
 
-const inputAreaDriverFactory = ({element, wrapper, component}) => {
-  const $component = $(element);
-  const textArea = $component.find('textarea')[0];
+import styles from './InputArea.scss';
+import { tooltipDataHook } from '../ErrorIndicator/ErrorIndicator';
+import { errorIndicatorDriverFactory } from '../ErrorIndicator/ErrorIndicator.driver';
+import { warningIndicatorDriverFactory } from '../WarningIndicator/WarningIndicator.driver';
+
+const inputAreaDriverFactory = ({ element }) => {
+  const textAreaElement = element && element.childNodes[0];
+  const textArea = element.querySelector('textarea');
+  const name = textArea.getAttribute('name');
+  const counterSelector = '[data-hook="counter"]';
+  const indicatorSelector = '[data-hook="inputArea-tooltip"]';
+  const errorIndicatorTestkit = () =>
+    errorIndicatorDriverFactory({
+      element: element.querySelector(indicatorSelector),
+    });
+  const warningIndicatorTestkit = () =>
+    warningIndicatorDriverFactory({
+      element: element.querySelector(indicatorSelector),
+    });
 
   return {
-    trigger: (trigger, event) => ReactTestUtils.Simulate[trigger](textArea, event),
+    trigger: (trigger, event) =>
+      ReactTestUtils.Simulate[trigger](textArea, event),
     focus: () => textArea.focus(),
-    enterText: text => ReactTestUtils.Simulate.change(textArea, {target: {value: text}}),
+    enterText: text => {
+      textArea.value = text;
+      ReactTestUtils.Simulate.change(textArea, {
+        target: { name, value: text },
+      });
+    },
     getValue: () => textArea.value,
+    getName: () => name,
     getPlaceholder: () => textArea.placeholder,
     getDefaultValue: () => textArea.defaultValue,
     getRowsCount: () => textArea.rows,
     getMaxLength: () => textArea.maxLength,
     getTabIndex: () => textArea.tabIndex,
     getReadOnly: () => textArea.readOnly,
-    getResizable: () => element.classList.contains(styles.resizable),
-    getHasCounter: () => element.classList.contains(styles.hasCounter),
-    hasExclamation: () => $component.find(`.${styles.exclamation}`).length === 1,
-    hasError: () => element.classList.contains(styles.hasError),
-    isFocusedStyle: () => element.classList.contains(styles.hasFocus),
-    isHoveredStyle: () => element.classList.contains(styles.hasHover),
-    isOfStyle: style => element.classList.contains(styles[`theme-${style}`]),
+    getResizable: () => textAreaElement.classList.contains(styles.resizable),
+    getDisabled: () =>
+      textAreaElement.classList.contains(styles.disabled) && textArea.disabled,
+    getHasCounter: () => !!element.querySelectorAll(counterSelector).length,
+    getCounterValue: () => element.querySelector(counterSelector).textContent,
+    hasExclamation: () =>
+      element.querySelectorAll(`.${styles.exclamation}`).length === 1,
+    hasError: () => textAreaElement.classList.contains(styles.hasError),
+    hasWarning: () => textAreaElement.classList.contains(styles.hasWarning),
+    isFocusedStyle: () => textAreaElement.classList.contains(styles.hasFocus),
+    isSizeSmall: () => textArea.classList.contains(styles.sizeSmall),
+    isHoveredStyle: () => textAreaElement.classList.contains(styles.hasHover),
+    isOfStyle: style =>
+      textAreaElement.classList.contains(styles[`theme-${style}`]),
     isFocus: () => document.activeElement === textArea,
     exists: () => !!textArea,
-    hasIconLeft: () => !$component.find(`.${styles.prefix}`).is(':empty'),
     getStyle: () => textArea.style,
     getAriaLabel: () => textArea.getAttribute('aria-label'),
     getAriaControls: () => textArea.getAttribute('aria-controls'),
     getAriaDescribedby: () => textArea.getAttribute('aria-describedby'),
-    getTooltipDataHook: () => 'inputArea-tooltip',
+    // TODO: get the dataHook using the <ErrorIndicator/> driver
+    getTooltipDataHook: () => tooltipDataHook,
     getTooltipElement: () => element,
-    setProps: props => {
-      const ClonedWithProps = React.cloneElement(component, Object.assign({}, component.props, props), ...(component.props.children || []));
-      ReactDOM.render(<div ref={r => element = r}>{ClonedWithProps}</div>, wrapper);
-    }
+    isErrorMessageShown: () => errorIndicatorTestkit().isShown(),
+    mouseEnterErrorIndicator: () => errorIndicatorTestkit().mouseEnter(),
+    // getErrorMessage - deprecated
+    getErrorMessage: () => errorIndicatorTestkit().getErrorMessage(),
+    getStatusMessage: () =>
+      errorIndicatorTestkit().getErrorMessage() ||
+      warningIndicatorTestkit().getWarningMessage(),
   };
 };
 

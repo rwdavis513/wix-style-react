@@ -1,45 +1,22 @@
-import React from 'react';
-import {shallow} from 'enzyme';
-import ToggleSwitch from './ToggleSwitch';
+import { toggleSwitchDriverFactory as coreToggleSwitchDriverFactory } from 'wix-ui-core/drivers/vanilla';
+import { StylableDOMUtil } from '@stylable/dom-test-kit';
+import style from './ToggleSwitch.st.css';
 
-export default class ToggleSwitchDriver {
-  constructor() {
-    this.props = {};
-  }
+const toggleSwitchDriverFactory = ({ element, eventTrigger }) => {
+  const coreToggleSwitchDriver = coreToggleSwitchDriverFactory({
+    element,
+    eventTrigger,
+  });
+  const stylableDOMUtil = new StylableDOMUtil(style, element);
 
-  given = {
-    size: size => {
-      this.props.size = size;
-      return this;
-    },
-    checked: value => {
-      this.props.checked = value;
-      return this;
-    },
-    onChange: value => {
-      this.props.onChange = value;
-      return this;
-    }
+  return {
+    ...coreToggleSwitchDriver,
+    /** Get Toggle Switch size */
+    getSize: () => stylableDOMUtil.getStyleState(element, 'size'),
+
+    /** Get Toggle Switch skin */
+    getSkin: () => stylableDOMUtil.getStyleState(element, 'skin'),
   };
+};
 
-  when = {
-    created: () => {
-      this.wrapper = shallow(
-        <ToggleSwitch {...this.props}/>
-      );
-      return this;
-    },
-    changed: () => {
-      this.wrapper.find('input').simulate('change');
-      return this;
-    }
-  };
-
-  get = {
-    element: () => this.wrapper,
-    checked: () => this.wrapper.find('input').props().checked,
-    isXSmall: () => this.wrapper.hasClass('toggleSwitchXSmall'),
-    isSmall: () => this.wrapper.hasClass('toggleSwitchSmall'),
-    isLarge: () => !this.get.isSmall() && !this.get.isXSmall()
-  }
-}
+export default toggleSwitchDriverFactory;

@@ -1,83 +1,108 @@
-# Grid and Card
+# Grid
 
-A grid container is based on rows with a 12 column layout.
+A grid is a collection of `<Container/>`, `<Row/>` and `<Col/>` components that help laying out
+content with ease.
 
-For full documentation read [Bootstrap docs](http://getbootstrap.com/css/#grid)
+`<Container/>` is based on `<Row/>`s with 12 `<Col/>`umns layout.
 
-## wix-style-react additions to bootstrap
+All components except for `<Container/>` can be nested.
 
-#### Container
+```js
+import {Container, Row, Col} from 'wix-style-react/Grid';
 
-Use for main content area.
+export default () =>
+  <Container>
+    <Row>
+      <Col>Left</Col>
+      <Col>Middle</Col>
+      <Col>Right</Col>
+    </Row>
+  </Container>;
+```
 
-Use ".wix-container" instead of bootstrap's ".container". 
+<details>
+  <summary>Nested grid example</summary>
 
-.wix-container adds to main content area: min width of 894px and max width of 1254px.
+  ```js
+  import {Container, Row, Col} from 'wix-style-react/Grid';
 
-#### Card
+  export default () =>
+    <Container>
+      <Row>
+        <Col>Left</Col>
 
-The card is a container component of a rounded corner layout.
+        <Col>
+          <Row>
+            <Col span={6}>Nested left</Col>
+            <Col span={6}>Nested right</Col>
+          </Row>
+        </Col>
 
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| stretchVertically | bool | false | false | Should this Card stretch vertically inside the container |
+        <Col>Right</Col>
+      </Row>
+    </Container>;
+  ```
+</details>
 
-#### Card.Header
+---
 
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| title | string | - | + | The title of the card |
-| subtitle | string | - | - | The subtitle of the card |
-| withoutDivider | bool | false | - | Whether to show divider or not |
+<details>
+  <summary>`<Container/>`</summary>
 
-#### Card.ButtonHeader
+  Use as wrapper for main content. Only `<Row/>`s should be its children.
 
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| title | string | - | + | The title of the card |
-| subtitle | string | - | - | The subtitle of the card |
-| buttonTitle | string | - | + | The text to write on the button |
-| buttonOnClick | func | - | + | The onClick function |
-| buttonPrefix | node | - | - | An optional Icon to put before the button |
-| buttonSuffix | node | - | - | An optional Icon to put after the button |
-| tooltip | node | - | - | If set, this tooltip will wrap the button |
-| theme | string | 'standard' | - | Can be 'standard' or 'fullblue' |
-| withoutDivider | bool | false | - | Whether to show divider or not |
+  By default it has `minWidth: 894px` and `maxWidth: 1254px`. Add `fluid` prop to remove those widths.
 
-#### Card.LinkHeader
+  `fluid` allows to use grid for any content, be it big (whole page layout) or small (form element layout, for example).
 
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| title | string | - | + | The title of the card |
-| subtitle | string | - | - | The subtitle of the card |
-| linkTo | string | - | + | The link to send the user to |
-| linkTitle | string | - | + | The link text |
-| tooltip | node | - | - | If set, this tooltip will wrap the link |
-| withoutDivider | bool | false | - | Whether to show divider or not |
+  | propName  | propType | defaultValue | isRequired | description                                           |
+  | ---       | ---      | ---          | ---        | ---                                                   |
+  | children  | node     | -            | -          | Should only be `<Row/>`s although any node is allowed |
+  | className | string   | -            | -          | Specify custom className for any css tweaks           |
+  | fluid     | bool     | false        | -          | disable min/max width, use for smaller grids          |
 
-#### Row
+  ---
 
-A simple row according to the bootstrap docs.
+  > **Note**: when `<Container/>` is used as full width component, it is possible for horizontal
+  > scrollbar to appear. It is because of negative margins on `<Row>`s that come from bootstrap
+  > (which `<Container/>`, `<Row/>` and `<Col/>` are based on).
+  >
+  > To circumvent, use `html, body { overflow-x: hidden; }`
+</details>
 
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| rtl | bool | - | - | Reverses the columns ordering |
-| stretchViewsVertically | bool | - | - | Make all the views in that raw the same height |
 
-#### AutoAdjustedRow
+<details>
+  <summary>`<Row/>`</summary>
 
-A row with as much columns as children with the same width.
-Can be used for multiple (not more than 12) equal cards on the same row.
-If you want that the children will be the at the same height, 
-just add height: 100%; to them (if there isn't already).
-if its a card just add the stretchVertically prop.
-##### Notice that the span of each element will be 12 % {the number of children}, so in case of result greater than 0, you'll get incomplete line
+  Use as wrapper for columns. Only `<Col/>`s should be its children.
+  One `<Row/>` should not have more than 12 `<Col/>`s.
+  
+  
+  | propName               | propType | defaultValue | isRequired | description                                    |
+  | ---                    | ---      | ---          | ---        | ---                                            |
+  | stretchViewsVertically | bool     | -            | -          | Make all the views in that row the same height |
 
-#### Col
+</details>
 
-A simple column according to the bootstrap docs
+<details>
+  <summary>`<Col/>`</summary>
 
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| span | number | - | + | The columns span of this column |
-| rtl | bool | - | - | Causing the column to float right |
+  Use for any content
+
+  | propName               | propType | defaultValue | isRequired | description                                    |
+  | ---                    | ---      | ---          | ---        | ---                                            |
+  | span                   | number   | -            | +          | The columns span of this column                |
+  | rtl                    | bool     | -            | -          | Reverses the columns ordering                  |
+</details>
+
+<details>
+  <summary>`<AutoAdjustedColumns/>`</summary>
+
+  A row of columns with as many columns as children with the same width.
+  Can be used for multiple (not more than 12) equal cards on the same row.
+  If you want that the children will be the at the same height,
+  just add `height: 100%;` to them (if there isn't already).
+  if its a card just add the `stretchVertically` prop.
+
+  > Note that the span of each element will be `12 % {children.length}`, so in case of result greater than 0, you'll get incomplete line
+</details>

@@ -1,9 +1,15 @@
-@import '../../Grid/Grid.scss';
+.root {
+  padding: 24px 30px 30px;
 
-$content-padding: 30px;
+  &.medium {
+    padding: 30px;
+  }
 
-.content {
-  @extend .container;
+  &.large {
+    padding: 36px;
+  }
+}
 
-  padding: $content-padding;
+.emptyStateContent {
+  padding: 42px;
 }

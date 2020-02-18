@@ -1,51 +1,75 @@
-import React, {Component} from 'react';
-import {node, bool, oneOf} from 'prop-types';
-import ReactCSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
-import slideLeft from './SlideLeftAnimation.scss';
-import slideRight from './SlideRightAnimation.scss';
+import React, { Component } from 'react';
+import { node, bool, oneOf, func } from 'prop-types';
+import { CSSTransition } from 'react-transition-group';
+import slideIn from './SlideInAnimation.scss';
+import slideOut from './SlideOutAnimation.scss';
 
 export const SlideDirection = {
-  left: 'left',
-  right: 'right'
+  in: 'in',
+  out: 'out',
 };
+
+const animationDuration = 300; // Synced with SlideAnimation.scss file
 
 class SlideAnimation extends Component {
   render() {
-    const {animateAppear, animateEnter, animateLeave, children, direction} = this.props;
-    const animationDuration = 300; // Synced with SlideAnimation.scss file
-    const transitionName = direction === SlideDirection.left ? slideLeft : slideRight;
+    const {
+      isVisible,
+      animateAppear,
+      animateEnter,
+      animateLeave,
+      children,
+      direction,
+      onEnter,
+      onExit,
+      onEntered,
+      onExited,
+    } = this.props;
+    const transitionNames =
+      direction === SlideDirection.in ? slideIn : slideOut;
+    const childTimeout = {
+      enter: animateEnter ? animationDuration : 0,
+      exit: animateLeave ? animationDuration : 0,
+    };
+
     return (
-      <ReactCSSTransitionGroup
-        transitionAppear={animateAppear}
-        transitionLeave={animateLeave}
-        transitionAppearTimeout={animateAppear ? animationDuration : 0}
-        transitionEnterTimeout={animateEnter ? animationDuration : 0}
-        transitionLeaveTimeout={animateLeave ? animationDuration : 0}
-        transitionName={transitionName}
-        >
-        {children}
-      </ReactCSSTransitionGroup>
+      <CSSTransition
+        in={isVisible}
+        appear={animateAppear}
+        exit={animateLeave}
+        classNames={transitionNames}
+        timeout={childTimeout}
+        unmountOnExit
+        onEnter={onEnter}
+        onExit={onExit}
+        onEntered={onEntered}
+        onExited={onExited}
+      >
+        {children || <span />}
+      </CSSTransition>
     );
   }
 }
 
 SlideAnimation.propTypes = {
-  direction: oneOf([
-    SlideDirection.left,
-    SlideDirection.right
-  ]),
+  isVisible: bool.isRequired,
+  direction: oneOf([SlideDirection.in, SlideDirection.out]),
   animateAppear: bool,
   animateEnter: bool,
   animateLeave: bool,
-  children: node
+  children: node,
+  onEnter: func,
+  onEntered: func,
+  onExit: func,
+  onExited: func,
 };
 
 SlideAnimation.defaultProps = {
-  direction: SlideDirection.left,
+  direction: SlideDirection.in,
   animateAppear: true,
   animateEnter: true,
   animateLeave: true,
-  children: null
+  children: null,
 };
 
 export default SlideAnimation;

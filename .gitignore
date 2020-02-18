@@ -8,8 +8,36 @@ target
 coverage
 .history
 storybook-static
-storybook-e2e
 /.idea/
 *.iml
 .vscode
 test/e2e
+.happypack
+yarn.lock
+package-lock.json
+.DS_Store
+autodocs-registry
+
+# we ignore all *.js, *.d.ts and *.scss in root folder to avoid committing component export
+# files that appear in root after build
+/*.js
+/*.d.ts
+
+
+!.prettierrc.js
+!wallaby.js
+!protractor.conf.js
+!babel.config.js
+!perfer.config.js
+.DS_Store
+/*.scss
+# we also ignore icons folder to avoid comitting icons export
+# icons that appear in root after build
+/new-icons/
+/src/new-icons/system
+/src/new-icons/*.js
+/bundles
+
+# applitools private config
+!applitools.config.js
+applitools.private.config.js

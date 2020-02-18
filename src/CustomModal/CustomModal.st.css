@@ -1,0 +1,129 @@
+:vars {
+  modalPadding: 30px;
+  modalBoxPadding: 48px;
+}
+
+:import {
+  -st-from: "../Foundation/stylable/colors.st.css";
+  -st-named: D80;
+}
+
+:import {
+  -st-from: "../Foundation/stylable/border.st.css";
+  -st-named: radius08;
+}
+
+.root {
+  -st-states: removeContentPadding;
+  background-color: value(D80);
+  position: relative;
+  min-width: 510px;
+  max-width: calc(100% - (value(modalBoxPadding) * 2) );
+  max-height: calc(100% - (value(modalBoxPadding) * 2) );
+  display: flex;
+  flex-direction: column;
+  border-radius: value(radius08);
+}
+
+
+:import {
+  -st-from: "../Foundation/stylable/default-scroll-bar.st.css";
+  -st-named: defaultScrollBar;
+}
+
+.contentWrapper {
+  height: 100%;
+  overflow-y: auto;
+  -st-mixin: defaultScrollBar;
+  padding: 0 value(modalPadding);
+}
+
+
+
+.root:removeContentPadding .contentWrapper {
+  padding: 0;
+}
+
+.actions {
+
+}
+
+
+
+/** Footer - start **/
+.buttons {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.buttons > :first-of-type:not(:last-of-type) {
+  margin-right: 12px;
+}
+
+.sideActions {
+  margin-right: 12px;
+}
+
+
+
+/* rtl */
+:global(.rtl) .buttons {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+:global(.rtl) .buttons > :first-of-type:not(:last-of-type) {
+  margin-left: 12px;
+  margin-right: 0;
+}
+
+:global(.rtl) .sideActions {
+  margin-left: 12px;
+  margin-right: 0;
+}
+
+/** Footer - end **/
+
+.footnote {
+  padding: 12px 0;
+  display: flex;
+  justify-content: center;
+}
+
+
+/** Header - start **/
+.header
+{
+  padding: 24px value(modalPadding);
+}
+.title{
+  /*display: inline-block;*/
+  /*word-break: break-word;*/
+}
+
+/** Header - end **/
+
+
+
+
+
+
+
+
+
+.closeButton {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+}
+
+:global(.rtl) .closeButton {
+  left: 12px;
+  right: unset;
+}
+
+
+.footerDivider {
+  display: none;
+}

@@ -1,0 +1,128 @@
+/* Fonts */
+:vars {
+  fontsfallback: '"Helvetica Neue", "Helvetica", "Arial", "メイリオ", "meiryo", "ヒラギノ角ゴ pro w3", "hiragino kaku gothic pro", "sans-serif"';
+  helveticanueu45: 'HelveticaNeueW01-45Ligh, HelveticaNeueW02-45Ligh';
+  helveticanueu55: 'HelveticaNeueW01-55Roma, HelveticaNeueW02-55Roma';
+  helveticanueu65: 'HelveticaNeueW01-65Medi, HelveticaNeueW02-65Medi';
+  helveticanueu75: 'HelveticaNeueW01-75Bold, HelveticaNeueW02-75Bold';
+}
+
+/* Family mixin */
+.font-mixin {
+  font-family: value(family), value(fontsfallback); /* IE11 */
+  font-family: var(--wsr-font-family, value(family)), value(fontsfallback);
+}
+
+/* Weight mixin */
+.weight-mixin {
+  font-weight: 400; /* IE11 */
+  font-weight: var(value(weight), 400);
+}
+
+/* Sizes */
+.tiny {
+  font-size: 12px;
+  line-height: 15px;
+}
+
+.small {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.medium {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* Weights */
+.thin {
+  -st-mixin: weight-mixin(weight --wsr-font-weight-regular);
+}
+
+.normal {
+  -st-mixin: weight-mixin(weight --wsr-font-weight-bold);
+}
+
+.bold {
+  -st-mixin: weight-mixin(weight --wsr-font-weight-bold);
+}
+
+/* Typography API */
+.text-tiny-thin {
+  -st-mixin: tiny, thin, font-mixin(family value(helveticanueu55));
+}
+
+.text-tiny-normal {
+  -st-mixin: tiny, normal, font-mixin(family value(helveticanueu65));
+}
+
+.text-tiny-bold {
+  -st-mixin: tiny, bold, font-mixin(family value(helveticanueu75));
+}
+
+.text-small-thin {
+  -st-mixin: small, thin, font-mixin(family value(helveticanueu45));
+}
+
+.text-small-normal {
+  -st-mixin: small, normal, font-mixin(family value(helveticanueu55));
+}
+
+.text-small-bold {
+  -st-mixin: small, bold, font-mixin(family value(helveticanueu65));
+}
+
+.text-medium-thin {
+  -st-mixin: medium, thin, font-mixin(family value(helveticanueu45));
+}
+
+.text-medium-normal {
+  -st-mixin: medium, normal, font-mixin(family value(helveticanueu55));
+}
+
+.text-medium-bold {
+  -st-mixin: medium, bold, font-mixin(family value(helveticanueu65));
+}
+
+.heading-h1 {
+  -st-mixin: font-mixin(family value(helveticanueu65)),
+    weight-mixin(weight --wsr-font-weight-bold);
+  font-size: 36px;
+  line-height: 48px;
+}
+
+.heading-h2 {
+  -st-mixin: font-mixin(family value(helveticanueu65)),
+    weight-mixin(weight --wsr-font-weight-bold);
+  font-size: 28px;
+  line-height: 36px;
+}
+
+.heading-h3 {
+  -st-mixin: font-mixin(family value(helveticanueu55)),
+    weight-mixin(weight --wsr-font-weight-regular);
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.heading-h4 {
+  -st-mixin: font-mixin(family value(helveticanueu55)),
+    weight-mixin(weight --wsr-font-weight-regular);
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.heading-h5 {
+  -st-mixin: font-mixin(family value(helveticanueu65)),
+    weight-mixin(weight --wsr-font-weight-bold);
+  font-size: 12px;
+  line-height: 24px;
+}
+
+.heading-h6 {
+  -st-mixin: font-mixin(family value(helveticanueu65)),
+    weight-mixin(weight --wsr-font-weight-bold);
+  font-size: 10px;
+  line-height: 18px;
+}

@@ -1,12 +1,8 @@
-const hasClass = (element, cls) => {
-  const normalized = cls.toLowerCase().replace('.', '_');
-  return element.getAttribute('class').then(classes => classes.includes(`__${normalized}__`));
-};
-
-export default component => ({
+const badgeDriverFactory = component => ({
+  /** returns the component element */
   element: () => component,
-  isOfType: type => hasClass(component, type),
-  isOfAppearance: appearance => hasClass(component, appearance),
-  isOfAlignment: alignment => hasClass(component, alignment),
-  text: () => component.getText()
+  /** returns the component text */
+  text: async () => component.getText(),
 });
+
+export default badgeDriverFactory;

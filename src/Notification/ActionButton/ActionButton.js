@@ -1,23 +1,30 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '../../Button';
-import TextLink from '../../TextLink';
+import TextButton from '../../TextButton';
 
-const ActionButton = ({children, onClick, type, link}) => {
+const ActionButton = ({ children, onClick, type, link, target }) => {
   const commonProps = {
     dataHook: 'notification-cta-button',
-    onClick: e => onClick(e)
+    onClick,
   };
 
   if (type === 'textLink') {
     return (
-      <TextLink underlineStyle="always" darkBackground link={link} {...commonProps} >
+      <TextButton
+        underline="always"
+        skin="light"
+        as="a"
+        href={link}
+        target={target}
+        {...commonProps}
+      >
         {children}
-      </TextLink>
+      </TextButton>
     );
   } else {
     return (
-      <Button height="small" theme="transparent" {...commonProps}>
+      <Button type="button" size="small" skin="transparent" {...commonProps}>
         {children}
       </Button>
     );
@@ -28,12 +35,13 @@ ActionButton.propTypes = {
   children: PropTypes.any,
   onClick: PropTypes.func,
   link: PropTypes.string,
-  type: PropTypes.string
+  type: PropTypes.string,
+  target: PropTypes.string,
 };
 
 ActionButton.defaultProps = {
-  onClick: e => e.preventDefault(),
-  type: 'button'
+  type: 'button',
+  target: '_self',
 };
 
 ActionButton.displayName = 'Notification.ActionButton';

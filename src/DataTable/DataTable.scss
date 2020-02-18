@@ -1,32 +1,224 @@
 @import '../common';
+@import '../typography-helpers';
+
+$headerShadowStandard: inset 0 1px 0 0 $B30, inset 0 -1px 0 0 $B30;
+$headerShadowNeutral: inset 0 1px 0 0 $D60, inset 0 -1px 0 0 $D60;
+$headerShadowFirstChildNeutral: inset 1px 1px 0 0 $D60, inset 0 -1px 0 0 $D60;
+$headerShadowLastChildNeutral: inset -1px 1px 0 0 $D60, inset 0 -1px 0 0 $D60;
+$columnShadow: inset 0 -1px 0 0 $D60;
+$activeColumnShadow: inset 0 -1px 0 0 $D70;
+$rowShadow: inset 0 1px 0 0 $D70;
 
 .table {
-    border-collapse: collapse;
-    font-family:HelveticaNeueW01-55Roma,HelveticaNeueW02-55Roma,HelveticaNeueW10-55Roma,sans-serif;
-    table-layout: fixed;
-    background-color: white;
+  border-collapse: collapse;
+  border-spacing: 0px;
+  font-family: HelveticaNeueW01-55Roma, HelveticaNeueW02-55Roma, HelveticaNeueW10-55Roma, sans-serif;
+  table-layout: fixed;
+  background-color: white;
+
+  &.virtualized {
+    display: block;
+
+    thead {
+      top: 0;
+      display: block;
+      position: sticky;
+      z-index: 2;
+
+      tr {
+        display: block;
+      }
+
+      th {
+        box-sizing: border-box;
+        display: inline-block;
+        padding-top: 12px;
+        padding-bottom: 12px;
+        height: 42px;
+      }
+    }
+
+    tbody {
+      display: block;
+      transform: translateY(0);
+
+      td {
+        box-sizing: border-box;
+        display: inline-block;
+      }
+    }
+
+  }
+}
+
+.table td, .table th {
+  padding-left: 12px;
+  padding-right: 12px;
+
+  &:last-child {
+    padding-left: 12px;
+    padding-right: 30px;
+  }
+
+  &:first-child {
+    padding-left: 30px;
+    padding-right: 12px;
+  }
 }
 
 .table th {
-  background-color: rgba(240, 243, 247, 0.5);
-  text-align: start;
-  color: $paletteD3;
-  border-top: solid 1px $D60;
+  padding-top: 9px;
+  padding-bottom: 9px;
+  height: 24px;
+  color: $D10;
+  font-weight: normal;
+
+  &.thSkinStandard {
+    background-color: $B40;
+    box-shadow: $headerShadowStandard;
+  }
+
+  &.thSkinNeutral {
+    background-color: $D10-03;
+    box-shadow: $headerShadowNeutral;
+
+    &:first-child {
+      box-shadow: $headerShadowFirstChildNeutral;
+    }
+
+    &:last-child {
+      box-shadow: $headerShadowLastChildNeutral;
+    }
+  }
+
+  .th-container {
+
+    display: flex;
+    align-items: center;
+
+    // Support for alignment within flex
+    &.alignStart {
+      justify-content: flex-start;
+    }
+
+    &.alignCenter {
+      justify-content: center;
+    }
+
+    &.alignEnd {
+      justify-content: flex-end;
+    }
+
+    .infoTooltipWrapper {
+      margin-left: 6px;
+    }
+  }
+
+  &.th-text {
+    @include Text($weight: normal, $size: small);
+  }
 }
 
+
 .table td {
-  font-size: 14px;
-  color: $paletteD3;
-  padding: 9px;
-  height: 44px;
-  border-bottom: solid 1px $D70;
+  @include Text($weight: thin, $size: small, $secondary: true);
+
+  &.largeVerticalPadding {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  &.mediumVerticalPadding {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  // Cells alignment
+  &.alignStart {
+    text-align: left;
+    text-align: start; // not supported in IE11 & Edge; 'left' as fallback
+  }
+
+  &.alignCenter {
+    text-align: center;
+  }
+
+  &.alignEnd {
+    text-align: right;
+    text-align: end; // not supported in IE11 & Edge; 'right' as fallback
+  }
+}
+
+.table.showLastRowDivider td {
+  box-shadow: $columnShadow;
+}
+
+.table:not(.showLastRowDivider) {
+  & tr:not(:last-child) {
+    td {
+      box-shadow: $columnShadow;
+    }
+  }
+}
+
+.table td.details {
+  padding: 0px;
+  height: 0px;
+  box-shadow: none;
+}
+
+.table td.active {
+  padding: 0px;
+  height: auto;
+  box-shadow: $activeColumnShadow;
 }
 
 .table td.important {
-  font-size: 16px;
-  color: $paletteD2;
+  @include Text($weight: thin, $size: medium);
 }
 
 .clickableDataRow {
   cursor: pointer;
+}
+
+.highlight {
+  background-color: $B60;
+  td {
+    font-weight: 600;
+    color: $D10;
+  }
+}
+
+.selected {
+  box-shadow: inset 2px 0px 0px 0px $B10;
+}
+
+.sortArrow {
+  font-size: 9px;
+  margin-left: 6px;
+  color: $B10;
+  display: flex;
+  align-items: center;
+}
+
+.row-details:not(:last-child) {
+  box-shadow: $activeColumnShadow;
+
+  .row-details-inner {
+    box-shadow: $rowShadow;
+  }
+}
+
+.animatedDataRow {
+  td {
+    box-shadow: none;
+  }
+
+  cursor: pointer;
+
+  &:nth-last-child(2) {
+    td {
+      box-shadow: $rowShadow;
+    }
+  }
 }

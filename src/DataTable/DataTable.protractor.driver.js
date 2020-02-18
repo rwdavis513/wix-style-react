@@ -1,16 +1,17 @@
-import _ from 'lodash/fp';
+const rowSelector = 'tbody tr';
+const rowByIdx = (component, index) => component.$$(rowSelector).get(index);
+const scrollIntoView = el => {
+  return browser.executeScript(element => {
+    element.scrollIntoView();
+  }, el.getWebElement());
+};
 
 const dataTableDriverFactory = component => ({
-  getFirstHighlightedRow: () => {
-    return component.$$('tbody tr').getAttribute('class')
-        .then(classes => {
-          const highlightedRowClass = classes.filter(i => /__highlight-row__/.test(i))[0].split(' ')[1];
-          return component.$(`.${highlightedRowClass}`).getText();
-        });
-  },
-  clickRowByIndex: index => component.$$('tbody tr').get(index).click(),
-  getRowTextByIndex: index => component.$$('tbody tr').get(index).getText(),
-  element: () => component
+  rowsCount: () => component.$$(rowSelector).count(),
+  clickRowByIndex: index => rowByIdx(component, index).click(),
+  getRowTextByIndex: index => rowByIdx(component, index).getText(),
+  scrollToRowByIdx: index => scrollIntoView(rowByIdx(component, index)),
+  element: () => component,
 });
 
 export default dataTableDriverFactory;

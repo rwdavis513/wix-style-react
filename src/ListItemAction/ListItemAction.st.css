@@ -1,0 +1,129 @@
+
+:import {
+  -st-from: "../Foundation/stylable/colors.st.css";
+  -st-named:
+    B10, B40, B50,
+    D10, D55, D80,
+    F00,
+    G30,
+    R10, R30;
+}
+
+:import {
+  -st-from: "../Foundation/stylable/colors.st.css";
+  -st-named: D10-30;
+}
+
+:import {
+  -st-from: "wix-ui-core/hocs.st.css";
+  -st-named: Focusable;
+}
+
+
+.root {
+  -st-states: skin(enum(standard, dark, destructive)), disabled;
+  -st-extends: Focusable;
+
+  display: inline-flex;
+  padding: 6px 24px 6px 18px;
+  width: 100%;
+  align-items: center;
+
+  background-color: value(D80);
+  cursor: pointer;
+
+  /* not supported in IE11 & Edge; 'left' as fallback */
+  text-align: left;
+  text-align: start;  
+
+  outline:none;
+  border: none;
+}
+
+.root:disabled {
+  cursor: default;
+  pointer-events: none;
+  color: value(D10-30);
+}
+
+.root:not(:disabled):focus-visible {
+  background-color: value(B40);
+  box-shadow:inset 0 0 0 3px value(F00);
+}
+
+/** Skin standard */
+
+.root:skin(standard) .text,
+.root:skin(standard) .prefixIcon {
+  color: value(B10)
+}
+
+.root:skin(standard):hover {
+  background-color: value(B50);
+}
+
+.root:skin(standard):active {
+  background-color: value(B40);
+}
+
+.root:skin(standard):not(:disabled):focus-visible {
+  background-color: value(B10);
+}
+
+.root:skin(standard):not(:disabled):focus-visible .text,
+.root:skin(standard):not(:disabled):focus-visible .prefixIcon  {
+   color: value(D80);
+}
+
+.root:skin(standard):disabled .text,
+.root:skin(standard):disabled .prefixIcon {
+  color: value(D10-30);
+}
+
+/** Skin dark */
+
+.root:skin(dark) .text,
+.root:skin(dark) .prefixIcon {
+  color: value(D10)
+}
+
+.root:skin(dark):hover .text,
+.root:skin(dark):hover .prefixIcon {
+  color: value(B10)
+}
+
+.root:skin(dark):active .text,
+.root:skin(dark):active .prefixIcon {
+  color: value(B10)
+}
+
+.root:skin(dark):disabled .text,
+.root:skin(dark):disabled .prefixIcon {
+  color: value(D10-30);
+}
+
+/** Skin destructive */
+
+.root:skin(destructive) .text,
+.root:skin(destructive) .prefixIcon {
+  color: value(R10)
+}
+
+.root:skin(destructive):disabled .text,
+.root:skin(destructive):disabled .prefixIcon {
+  color: value(D10-30);
+}
+
+.text {
+  margin: 0 0 0 6px;
+}
+
+.prefixIcon {
+  flex-shrink: 0;
+}
+
+/* RTL support */
+
+:global([dir='rtl']) .text {
+  margin: 0 6px 0 0;
+}

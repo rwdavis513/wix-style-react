@@ -1,19 +1,25 @@
 @import '../common.scss';
 
 .menu {
-	margin: 0;
-	padding: 0;
-	list-style-type: none;
+  margin: 0;
+  padding: 9px 0;
+  list-style-type: none;
 
-	:global(.ltr) &, & {
-		text-align: left;
-		margin-right: 6px;
-		margin-left: 0;
-	}
+  &.large {
+    padding: 12px 0;
+  }
+}
 
-	:global(.rtl) & {
-		text-align: right;
-		margin-left: 6px;
-		margin-right: 0;
-	}
+.placementTop {
+  padding: 9px 0 15px 0;
+}
+
+.placementBottom {
+  padding: 15px 0 9px 0;
+}
+
+@include withRTL() {
+  .menu {
+    text-align: right;
+  }
 }

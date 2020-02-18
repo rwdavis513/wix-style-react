@@ -1,8 +1,22 @@
-# Label component
+# `<Label/>`
 
-## Properties
+General all purpose label component with Wix styling.
 
-| propName | propType | defaultValue | isRequired | description |
-|----------|----------|--------------|------------|-------------|
-| appearance | string | T1.1 | - | The typography type of the label, can be one of the `T#`'s.
-| for | string | - | - | The input id to associate it with. |
+## Usage
+
+1. Load Wix fonts from CDN:
+
+```html
+<link rel="stylesheet" href="//static.parastorage.com/services/third-party/fonts/Helvetica/fontFace.css">
+```
+
+2. Use `<Label>` component with appropriate appearance:
+
+```js
+import Label from 'wix-style-react/Label';
+
+export default () =>
+  <div>
+    <Label>Label</Label>
+  </div>;
+```

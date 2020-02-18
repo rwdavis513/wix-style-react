@@ -1,46 +1,74 @@
 import React from 'react';
-import {bool, string} from 'prop-types';
-import classNames from 'classnames';
-import styles from './Header.scss';
-import WixComponent from '../../WixComponent';
+import PropTypes from 'prop-types';
+import { Animator } from 'wix-animations';
 
-class Header extends WixComponent {
+import Divider from '../Divider';
+import styles from './Header.scss';
+import Heading from '../../Heading';
+import Text from '../../Text';
+
+const isString = a => typeof a === 'string';
+
+class Header extends React.PureComponent {
+  static displayName = 'Card.Header';
 
   static propTypes = {
-    title: string.isRequired,
-    subtitle: string,
-    withoutDivider: bool
+    /** Applied as data-hook HTML attribute that can be used in the tests */
+    dataHook: PropTypes.string,
+
+    /** required card title */
+    title: PropTypes.node.isRequired,
+
+    /** any string to be rendered below title */
+    subtitle: PropTypes.node,
+
+    suffix: PropTypes.node,
+
+    /** define whether header border on the bottom is visible
+     * deprecated! use <Card.Divider/> instead
+     * @deprecated
+     * */
+    withoutDivider: PropTypes.bool,
   };
 
   static defaultProps = {
     subtitle: null,
-    withoutDivider: false
+    suffix: null,
+    withoutDivider: false,
   };
 
   render() {
-    const {title, subtitle, withoutDivider} = this.props;
-
-    const headerClasses = classNames({
-      [styles.header]: true,
-      [styles.withDivider]: !withoutDivider,
-    });
-
-    const titleElement = (
-      <div data-hook="title" className={styles.title}>
-        {title}
-      </div>
-    );
-
-    const subtitleElement = subtitle ? (
-      <div data-hook="subtitle" className={styles.subtitle}>
-        {this.props.subtitle}
-      </div>
-    ) : null;
+    const { dataHook, title, subtitle, withoutDivider, suffix } = this.props;
 
     return (
-      <div className={headerClasses}>
-        {titleElement}
-        {subtitleElement}
+      <div data-hook={dataHook}>
+        <div className={styles.wrapper}>
+          <div className={styles.titleWrapper}>
+            {isString(title) ? (
+              <Heading dataHook="title" appearance="H3" children={title} />
+            ) : (
+              <span data-hook="title">{title}</span>
+            )}
+
+            {subtitle && isString(subtitle) ? (
+              <Text dataHook="subtitle" children={subtitle} secondary />
+            ) : (
+              <span data-hook="subtitle">{subtitle}</span>
+            )}
+          </div>
+
+          {suffix && (
+            <div
+              data-hook="suffix"
+              className={styles.suffix}
+              children={suffix}
+            />
+          )}
+        </div>
+
+        <Animator opacity timing="medium" show={!withoutDivider}>
+          <Divider />
+        </Animator>
       </div>
     );
   }

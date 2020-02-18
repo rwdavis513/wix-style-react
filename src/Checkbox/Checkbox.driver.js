@@ -1,24 +1,56 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import ReactTestUtils from 'react-dom/test-utils';
-import $ from 'jquery';
+import { labelDriverFactory } from 'wix-ui-backoffice/dist/src/components/Label/Label.driver';
+import { testkitFactoryCreator } from 'wix-ui-test-utils/vanilla';
+//TODO - add tooltip classic driver in the correct place
+import { tooltipDriverFactory } from 'wix-ui-core/dist/src/components/tooltip/Tooltip.driver';
 
-const checkboxDriverFactory = ({element, wrapper, component}) => {
+import { dataHooks } from './constants';
+import * as DATA_ATTR from './DataAttr';
 
-  const checkbox = $(element).find('input')[0];
-  const isClassExists = (element, className) => !!(element.className.match(new RegExp('\\b' + className + '\\b')));
+const labelTestkitFactory = testkitFactoryCreator(labelDriverFactory);
+
+const checkboxDriverFactory = ({ element, eventTrigger }) => {
+  const byHook = hook => element.querySelector(`[data-hook*="${hook}"]`);
+  const input = () => element.querySelector('input');
+  const checkbox = () => element.querySelector(dataHooks.box);
+  const labelDriver = () =>
+    labelTestkitFactory({ wrapper: element, dataHook: dataHooks.label });
+  const isChecked = () => input().checked;
+
+  const getErrorMessage = async () => {
+    const tooltipTestkit = tooltipDriverFactory({
+      element: byHook(dataHooks.boxTooltip),
+      eventTrigger,
+    });
+
+    try {
+      tooltipTestkit.mouseEnter();
+      const contentElement = tooltipTestkit.getContentElement();
+      tooltipTestkit.mouseLeave();
+      return await contentElement.textContent;
+    } catch (e) {
+      throw new Error('Failed getting checkbox error message');
+    }
+  };
 
   return {
     exists: () => !!element,
-    click: () => ReactTestUtils.Simulate.change(checkbox),
-    isChecked: () => isClassExists(element, 'checked'),
-    isDisabled: () => isClassExists(element, 'disabled'),
-    isIndeterminate: () => $(element).find('.indeterminate').length === 1,
-    getLabel: () => element.textContent,
-    setProps: props => {
-      const ClonedWithProps = React.cloneElement(component, Object.assign({}, component.props, props), ...(component.props.children || []));
-      ReactDOM.render(<div ref={r => element = r}>{ClonedWithProps}</div>, wrapper);
-    }
+    click: () =>
+      eventTrigger.change(input(), {
+        target: { checked: !isChecked() },
+      }),
+    /** trigger focus on the element */
+    focus: () => eventTrigger.focus(checkbox()),
+    /** trigger blur on the element */
+    blur: () => eventTrigger.blur(checkbox()),
+    isChecked: () => isChecked(),
+    isDisabled: () => element.getAttribute(DATA_ATTR.DATA_DISABLED) === 'true',
+    isIndeterminate: () =>
+      element.getAttribute(DATA_ATTR.DATA_CHECK_TYPE) ===
+      DATA_ATTR.CHECK_TYPES.INDETERMINATE,
+    hasError: () => element.getAttribute(DATA_ATTR.DATA_HAS_ERROR) === 'true',
+    getLabel: () => labelDriver().getLabelText(),
+    getLabelDriver: () => labelDriver(),
+    getErrorMessage,
   };
 };
 

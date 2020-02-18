@@ -1,0 +1,32 @@
+:import {
+  -st-from: "../Foundation/stylable/colors.st.css";
+  -st-named: D60, D20;
+}
+
+.root {
+  -st-states:
+    direction(enum(horizontal, vertical)),
+    skin(enum(light, dark));
+
+  margin: 0;
+  border: 0;
+}
+
+.root:direction(horizontal) {
+  min-height: 1px;
+  width: 100%;
+}
+
+.root:direction(vertical) {
+  display: inline-block;
+  min-height: 100%;
+  width: 1px;
+}
+
+.root:skin(light) {
+  background-color: value(D60);
+}
+
+.root:skin(dark) {
+  background-color: value(D20);
+}

@@ -1,77 +1,98 @@
-import React, {Component} from 'react';
-import styles from './Grid.scss';
-import Card from '../Card';
+import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 
-class Container extends Component {
+import styles from './Grid.scss';
+import pageStyles from '../Page/Page.public.scss';
 
-  static propTypes = {
-    children: PropTypes.node
-  };
+const containerProps = {
+  children: PropTypes.node,
+  fluid: PropTypes.bool,
+  className: PropTypes.string,
+  /** Applies min-height in order to fit to `<Page.Content/>`  */
+  stretchVertically: PropTypes.bool,
+};
 
-  render() {
-    return (
-      <div className={styles.wixContainer}>
-        {this.props.children}
-      </div>
-    );
-  }
-}
+const RawContainer = ({ children, fluid, className, stretchVertically }) => (
+  <div
+    className={classNames(styles.rawContainer, className, {
+      [styles.fluidContainer]: fluid,
+      [pageStyles.pageStretchContentVertically]: stretchVertically,
+    })}
+    children={children}
+  />
+);
 
-class Row extends Component {
+RawContainer.propTypes = containerProps;
 
+const Container = ({ children, fluid, className, stretchVertically }) => (
+  <div
+    className={classNames(styles.wixContainer, className, {
+      [styles.fluidContainer]: fluid,
+      [pageStyles.pageStretchContentVertically]: stretchVertically,
+    })}
+    children={children}
+  />
+);
+
+Container.propTypes = containerProps;
+
+class Columns extends Component {
   static propTypes = {
     children: PropTypes.node,
     className: PropTypes.string,
     rtl: PropTypes.bool,
     stretchViewsVertically: PropTypes.bool,
-    dataHook: PropTypes.string
+    dataHook: PropTypes.string,
   };
 
   static defaultProps = {
-    stretchViewsVertically: false
+    stretchViewsVertically: false,
   };
 
   render() {
-    const rowClasses = classNames(
-      styles.row,
-      this.props.className,
-      {
-        [styles.rtl]: this.props.rtl,
-        [styles.stretch_vertically_row]: this.props.stretchViewsVertically
-      });
+    const {
+      className,
+      rtl,
+      stretchViewsVertically,
+      dataHook,
+      children,
+    } = this.props;
+
+    const rowClasses = classNames(styles.row, className, {
+      [styles.rtl]: rtl,
+      [styles.stretch_vertically_row]: stretchViewsVertically,
+    });
 
     return (
-      <div className={rowClasses} data-hook={this.props.dataHook}>
-        {this.props.children}
-      </div>
+      <div className={rowClasses} data-hook={dataHook} children={children} />
     );
   }
 }
 
-class AutoAdjustedRow extends Component {
-
+class AutoAdjustedColumns extends Component {
   DEFAULT_MAX_SPAN = 12;
+
   static propTypes = {
-    children: PropTypes.node
+    children: PropTypes.node,
   };
 
   render() {
-    const cssClasses = classNames(styles.row, styles.flexContainer);
     const children = this.props.children;
     const cols = Array.isArray(children) ? children : [children];
     const spanSize = Math.floor(this.DEFAULT_MAX_SPAN / cols.length);
+
     return (
-      <div className={cssClasses}>
-        {cols.map((child, index) => <Col span={spanSize} key={index}>{child}</Col>)}
+      <div className={classNames(styles.row, styles.flexContainer)}>
+        {cols.map((col, index) => (
+          <Col span={spanSize} key={index} children={col} />
+        ))}
       </div>
     );
   }
 }
 
 class Col extends Component {
-
   static propTypes = {
     children: PropTypes.node,
     className: PropTypes.string,
@@ -82,7 +103,11 @@ class Col extends Component {
     md: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     lg: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     xl: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    dataHook: PropTypes.string
+    dataHook: PropTypes.string,
+  };
+
+  static defaultProps = {
+    span: 12,
   };
 
   isVisibleHidden(str) {
@@ -98,27 +123,49 @@ class Col extends Component {
   }
 
   render() {
-    const columnClasses = classNames(
-      this.props.className,
-      styles.column,
-      {[styles.rtl]: this.props.rtl},
-      {[styles[`colXs${this.props.span}`]]: this.isLegalCol(this.props.span)},
-      {[styles[`colXs${this.props.xs}`]]: this.isLegalCol(this.props.xs)},
-      {[styles[`colSm${this.props.sm}`]]: this.isLegalCol(this.props.sm)},
-      {[styles[`colMd${this.props.md}`]]: this.isLegalCol(this.props.md)},
-      {[styles[`colLg${this.props.lg}`]]: this.isLegalCol(this.props.lg)},
-      {[styles[`colXl${this.props.xl}`]]: this.isLegalCol(this.props.xl)},
-      {[styles[`${this.props.xs}Xs`]]: this.isVisibleHidden(this.props.xs)},
-      {[styles[`${this.props.sm}Sm`]]: this.isVisibleHidden(this.props.sm)},
-      {[styles[`${this.props.md}Md`]]: this.isVisibleHidden(this.props.md)},
-      {[styles[`${this.props.lg}Lg`]]: this.isVisibleHidden(this.props.lg)},
-    );
+    const {
+      children,
+      className,
+      span,
+      rtl,
+      xs,
+      sm,
+      md,
+      lg,
+      xl,
+      dataHook,
+    } = this.props;
+
+    const colClesses = {
+      [styles[`colXs${span}`]]: this.isLegalCol(span),
+      [styles[`colXs${xs}`]]: this.isLegalCol(xs),
+      [styles[`colSm${sm}`]]: this.isLegalCol(sm),
+      [styles[`colMd${md}`]]: this.isLegalCol(md),
+      [styles[`colLg${lg}`]]: this.isLegalCol(lg),
+      [styles[`colXl${xl}`]]: this.isLegalCol(xl),
+    };
+    const columnClasses = classNames(className, styles.col, {
+      [styles.rtl]: rtl,
+      [styles[`${xs}Xs`]]: this.isVisibleHidden(xs),
+      [styles[`${sm}Sm`]]: this.isVisibleHidden(sm),
+      [styles[`${md}Md`]]: this.isVisibleHidden(md),
+      [styles[`${lg}Lg`]]: this.isVisibleHidden(lg),
+      ...colClesses,
+      [styles.legalCol]: Object.values(colClesses).includes(true),
+    });
+
     return (
-      <div className={columnClasses} data-hook={this.props.dataHook}>
-        {this.props.children}
-      </div>
+      <div className={columnClasses} data-hook={dataHook} children={children} />
     );
   }
 }
 
-export {Container, Row, AutoAdjustedRow, Col, Card};
+export {
+  Container,
+  RawContainer,
+  Columns,
+  Columns as Row,
+  AutoAdjustedColumns,
+  AutoAdjustedColumns as AutoAdjustedRow,
+  Col,
+};

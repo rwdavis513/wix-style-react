@@ -1,0 +1,176 @@
+@import '../common';
+@import '../Grid/GridConstants.scss';
+@import '../ZIndex';
+
+
+$page-side-padding: 48px;
+$headerBottomPadding: 24px;
+$page-background-color: $D70;
+$image-container-offset: 30px;
+$pageBottomPadding: 48px; //  Should be synced with JS Page value
+
+$minimizedHeaderWrapperMinHeight: 30px;
+$minimizedHeaderWrapperTopPadding: 18px;
+$minimizedHeaderWrapperBottomPadding: 18px;
+$minimizedHeaderWrapperWithTailBottomPadding: 12px;
+/*
+ * These totals are also defined in constants.js
+ * TODO: Export values instead of defining them twice
+ *
+ * - minimizedHeight: 66
+ * - minimizedWithTailHeight: 60
+ */
+
+/**********************
+ *      Z-Indexs
+ **********************/
+$zIndexLayerStep: 100;
+/* z-index is needed so that non-sticky content with 'position: relative' would not overlay above the sticky content.
+   Need to be height than any component that may fit into a sticky page content.
+   Currently:
+    - InputErrorSuffix's content uses 10000 (Likely to appear in a sticky TableToolbar)
+    - Tooltip uses 2000
+    - ToggleButton uses 1000
+   */
+$stickyZIndex: 1100;
+$minimizedHeaderContainerZIndex: $stickyZIndex + $zIndexLayerStep;
+
+.pageWrapper {
+  overflow-x: auto;
+  height: 100%;
+  z-index: $zIndex_PAGE;
+
+  .page {
+    position: relative;
+    background-color: $page-background-color;
+    min-width: $main-container-min-width;
+    height: 100%;
+    transform: scale(1); // Make this the containing-block for position: fixed
+
+    .scrollableContainer {
+      overflow-y: auto;
+      width: 100%;
+      position: relative;
+      height: 100%;
+
+      .pageHeaderContainer {
+        position: relative;
+
+        width: 100%;
+        margin: 0 auto;
+        box-sizing: border-box;
+
+        .headerWrapper {
+          padding-top: 30px;
+          padding-bottom: $headerBottomPadding;
+
+          &.minimized {
+            box-sizing: content;
+            min-height: $minimizedHeaderWrapperMinHeight;
+            padding-top: $minimizedHeaderWrapperTopPadding;
+            padding-bottom: $minimizedHeaderWrapperBottomPadding;
+
+            position: relative;
+            @keyframes entrance {
+              0% {
+                opacity: 0;
+                bottom: -20px;
+              }
+              100% {
+                opacity: 1;
+                bottom: 0px;
+              }
+            }
+            animation: entrance 0.2s;
+          }
+        }
+
+        &.hasTail .headerWrapper.minimized {
+          padding-bottom: $minimizedHeaderWrapperWithTailBottomPadding;
+        }
+
+        .tail {
+          background-color: $page-background-color;
+        }
+
+        &.minimized {
+          top: 0px;
+          position: fixed;
+          z-index: $minimizedHeaderContainerZIndex;
+          background-color: $page-background-color;
+          border-bottom: 1px solid $D60;
+        }
+      }
+
+      .contentContainer {
+        padding-bottom: 48px;
+        position: relative;
+      }
+
+      &.hasTail .contentContainer {
+        margin-top: $headerBottomPadding;
+      }
+    }
+  }
+}
+
+
+.imageBackgroundContainer {
+  position: absolute;
+  overflow: hidden;
+  top: 0;
+  width: 100%;
+  height: 100%;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba($D10, 0.42);
+  }
+
+  .imageBackground {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    position: absolute;
+    top: -$image-container-offset;
+    bottom: -$image-container-offset;
+    left: -$image-container-offset;
+    right: -$image-container-offset;
+    filter: blur(12px);
+  }
+}
+
+.gradientBackground {
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.contentHorizontalLayout {
+  padding: 0 $page-side-padding;
+  margin: 0 auto;
+}
+
+// Needed in order to be above the background image which has position absolute
+.contentFloating {
+  position: relative;
+}
+
+.contentFullWidth {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sticky {
+  position: sticky;
+  z-index: $stickyZIndex;
+  background-color: $page-background-color; // This fixes non-sticky content from being shown behind sticky content with rounded-corners
+}
+
+.stretchVertically {
+  height: 100%;
+}

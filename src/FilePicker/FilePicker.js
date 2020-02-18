@@ -1,47 +1,93 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import styles from './FilePicker.scss';
-import WixComponent from '../WixComponent';
-import {Add} from '../Icons/dist';
+import Add from 'wix-ui-icons-common/Add';
+import uniqueId from 'lodash/uniqueId';
 
-class FilePicker extends WixComponent {
+import styles from './FilePicker.scss';
+import FormField from '../FormField';
+import TextButton from '../TextButton';
+import Text from '../Text';
+
+/**
+ * # `<FilePicker/>`
+ *
+ * Component that opens system browser dialog for choosing files to upload
+ */
+class FilePicker extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      selectedFileName: props.subLabel
+      selectedFileName: props.subLabel,
     };
+    this.id = props.id || uniqueId('file_picker_input_');
   }
 
   onChooseFile(file) {
-    const {maxSize, onChange} = this.props;
+    const { maxSize, onChange } = this.props;
 
     if (file) {
       onChange(file);
       if (file.size <= maxSize) {
-        this.setState({selectedFileName: file.name});
+        this.setState({ selectedFileName: file.name });
       }
     }
   }
 
   render() {
-    const {header, mainLabel, supportedFormats, error, errorMessage} = this.props;
+    const {
+      header,
+      mainLabel,
+      supportedFormats,
+      error,
+      errorMessage,
+      name,
+      dataHook,
+    } = this.props;
 
     return (
-      <div>
-        {header && (<span className={styles.header}>{header}</span>)}
-        <label className={styles.label}>
-          <div className={styles.icon}><Add width="42" height="42"/></div>
-          <div>
-            <span className={styles.cta} data-hook="main-label">{mainLabel}</span>
-            <span className={styles.info} data-hook="sub-label">{this.state.selectedFileName}</span>
-            {error && <span data-hook="filePicker-error" className={styles.error}>{errorMessage}</span>}
+      <FormField label={header} dataHook={dataHook}>
+        <label className={styles.label} htmlFor={this.id}>
+          {/* Icon */}
+          <div className={styles.icon}>
+            <Add />
           </div>
-          <input className={styles.input} type="file" accept={supportedFormats} onChange={e => this.onChooseFile(e.target.files[0])}/>
+
+          <div className={styles.content}>
+            {/* Title */}
+            <TextButton dataHook="main-label">{mainLabel}</TextButton>
+
+            {/* Subtitle */}
+            <Text
+              className={styles.info}
+              size="small"
+              secondary
+              dataHook="sub-label"
+            >
+              {this.state.selectedFileName}
+            </Text>
+
+            {/* Error */}
+            {error && (
+              <Text skin="error" size="small" dataHook="filePicker-error">
+                {errorMessage}
+              </Text>
+            )}
+          </div>
         </label>
-      </div>
+        <input
+          id={this.id}
+          className={styles.input}
+          type="file"
+          accept={supportedFormats}
+          onChange={e => this.onChooseFile(e.target.files[0])}
+          name={name}
+        />
+      </FormField>
     );
   }
 }
+
+FilePicker.displayName = 'FilePicker';
 
 FilePicker.defaultProps = {
   mainLabel: 'Choose File',
@@ -49,18 +95,42 @@ FilePicker.defaultProps = {
   onChange: () => {},
   supportedFormats: '*',
   errorMessage: '',
-  maxSize: 5000000  //5MB
+  maxSize: 5000000, //5MB
 };
 
 FilePicker.propTypes = {
+  /** Some text that will appear above the Icon */
   header: PropTypes.string,
+
+  /** Callback function for when a file is uploaded */
   onChange: PropTypes.func,
+
+  /** Some text that will appear as a main label besides the Icon */
   mainLabel: PropTypes.string,
+
+  /** Some text that will appear as a sub label besides the Icon   */
   subLabel: PropTypes.string,
+
+  /** supported formats separated by comma (.png, .pdf) */
   supportedFormats: PropTypes.string,
+
+  /** Max size of file allowed */
   maxSize: PropTypes.number,
+
+  /** should present error */
   error: PropTypes.bool,
-  errorMessage: PropTypes.string
+
+  /** error message to present */
+  errorMessage: PropTypes.string,
+
+  /** id for the filePicker */
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+
+  /** Name for inner input */
+  name: PropTypes.string,
+
+  /** Data attribute for testing purposes */
+  dataHook: PropTypes.string,
 };
 
 export default FilePicker;

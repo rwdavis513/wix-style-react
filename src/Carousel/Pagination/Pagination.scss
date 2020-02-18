@@ -1,0 +1,27 @@
+@import "../../colors.scss";
+
+.root {
+  display: flex;
+  justify-content: center;
+
+  &:global(.slick-dots) {
+    position: static;
+    margin-top: 18px;
+  
+    :global(li.slick-active) {
+      background-color: $B00;
+    }
+  }
+
+   & .dot {
+    width: 12px;
+    height: 4px;
+    background-color: $B40;
+    border-radius: 2px;
+    margin: 0 3px;
+
+     &:hover {
+      background-color: $B30;
+    }
+  }
+}

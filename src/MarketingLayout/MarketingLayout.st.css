@@ -1,0 +1,94 @@
+.root {
+  -st-states: size(enum(small, medium, large)), inverted, withActions, withImageBackground;
+  padding: 30px;
+}
+
+.root:size(small) {
+  padding-left: 48px;
+}
+:global([dir="rtl"]) .root:size(small) {
+  padding-left: 30px;
+  padding-right: 48px;
+}
+
+.root:size(medium) {
+  padding-left: 48px;
+}
+:global([dir="rtl"]) .root:size(medium) {
+  padding-left: 30px;
+  padding-right: 48px;
+}
+
+.root:size(large) {
+  padding-left: 60px;
+}
+:global([dir="rtl"]) .root:size(large) {
+  padding-left: 30px;
+  padding-right: 60px;
+}
+
+.root:inverted {
+  padding-left: 30px;
+}
+:global([dir="rtl"]) .root:inverted {
+  padding-right: 30px;
+}
+
+.contentContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+.root:inverted:withImageBackground .contentContainer {
+  padding-left: 30px;
+}
+:global([dir="rtl"]) .root:inverted:withImageBackground .contentContainer {
+  padding-left: 0;
+  padding-right: 30px;
+}
+
+.title {
+  padding-bottom: 18px;
+}
+
+.root:size(small) .title {
+  padding-bottom: 12px;
+}
+
+.root:withActions .description {
+  padding-bottom: 36px;
+}
+
+.root:size(small):withActions .description {
+  padding-bottom: 24px;
+}
+
+.imageWrapper {
+  position: relative;
+  height: 100%;
+}
+
+.imageContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.imagePlaceholder {
+  background-color: #d8d8d8;
+  height: 100%;
+}
+
+.imageBackground {
+  position: absolute;
+  left: -30px;
+  top: -30px;
+  width: calc(100% + 60px);
+  height: calc(100% + 60px);
+}

@@ -11,11 +11,13 @@
 | getConfirmationButtonText | - | string | returns the confirmation button text |
 | getCancellationButton | - | element | returns the cancellation button element |
 | getCancellationButtonText | - | string | returns the cancellation button text |
-| isCancelButtonEnabled     | - | boolean | Whether cancel button is enabled    |
-| isConfirmationButtonEnabled | - | boolean | Whether confirmation button is enabled |
+| getHeaderCloseButton | - | element | returns the close button element |
+| isCancelEnable | - | boolean | Whether cancel button is enabled    |
+| isConfirmationEnable | - | boolean | Whether confirmation button is enabled |
 | clickOnCancellationButton | - | - | clicks on the cancellation button |
 | clickOnConfirmationButton | - | - | clicks on the confirmation button |
-| isThemeExist | (green, blue , red) | bool | fulfilled if theme applied |
+| clickOnHeaderCloseButton | - | - | clicks on the close button |
+| isThemeExist | (green, blue , red, purple) | bool | fulfilled if theme applied |
 | getFooter | - | element | returns the footer element |
 | getTitle | - | string | returns the  title of the Message Box |
 | getChildBySelector | selector | child element | return the element inside the Message box content |
@@ -26,26 +28,26 @@
   import React from 'react';
   import {messageBoxFunctionalLayoutTestkitFactory} from 'wix-style-react/dist/testkit';
   import {messageBoxFunctionalLayoutTestkitFactory as enzymeMessageBoxFunctionalLayoutTestkitFactory} from 'wix-style-react/dist/testkit/enzyme';
-  
+
   /**************
-   enzyme exmaple
+   enzyme example
   ***************/
-  
+
   const component = mount(<div/><MessageBoxFunctionalLayout dataHook='messageBox'/></div>);
-  enzymeMessageBoxMarketerialLayoutTestKit = enzymeMessageBoxFunctionalLayoutTestkitFactory({wrapper: component, dataHook: 'messageBox'})
-  
-  expect(enzymeMessageBoxMarketerialLayoutTestKit.getConfirmationButtonText()).toBe('OK');
+  enzymeMessageBoxFunctionalLayoutTestKit = enzymeMessageBoxFunctionalLayoutTestkitFactory({wrapper: component, dataHook: 'messageBox'})
+
+  expect(enzymeMessageBoxFunctionalLayoutTestKit.getConfirmationButtonText()).toBe('OK');
 
   /***********************
-   ReactTestUtils exmaple
+   ReactTestUtils example
   ***********************/
-  
+
   const div = document.createElement('div');
   const dataHook = 'messageBox';
   const elementToRender = React.cloneElement(Element, {dataHook});
   const wrapper = div.appendChild(ReactTestUtils.renderIntoDocument(<div>{elementToRender}</div>));
   const testkit = messageBoxFunctionalLayoutTestkitFactory({wrapper, dataHook});
-  
+
   expect(messageBoxFunctionalLayoutTestKit.getConfirmationButtonText()).toBe('OK');
 ```
 
@@ -73,25 +75,25 @@
   import React from 'react';
   import {messageBoxMarketerialLayoutTestkitFactory} from 'wix-style-react/dist/testkit';
   import {messageBoxMarketerialLayoutTestkitFactory as enzymeMessageBoxMarketerialLayoutTestkitFactory} from 'wix-style-react/dist/testkit/enzyme';
-  
+
   /**************
-   enzyme exmaple
+   enzyme example
   ***************/
-  
+
   const component = mount(<div/><MessageBoxMarketerialLayout dataHook='messageBox'/></div>);
   enzymeMessageBoxMarketerialLayoutTestKit = enzymeMessageBoxMarketerialLayoutTestkitFactory({wrapper: this.component, dataHook: 'messageBox'})
-  
+
   expect(enzymeMessageBoxMarketerialLayoutTestKit.getPrimaryButtonText()).toBe('OK');
-  
+
   /***********************
-   ReactTestUtils exmaple
+   ReactTestUtils example
   ***********************/
-  
+
   const div = document.createElement('div');
   const dataHook = 'messageBox';
   const elementToRender = React.cloneElement(Element, {dataHook});
   const wrapper = div.appendChild(ReactTestUtils.renderIntoDocument(<div>{elementToRender}</div>));
   const testkit = messageBoxMarketerialLayoutTestkitFactory({wrapper, dataHook});
-  
+
   expect(messageBoxMarketerialLayoutTestKit.getPrimaryButtonText()).toBe('OK');
 ```

@@ -1,6 +1,6 @@
 # AutoComplete component
 
-> Input with auto suggestions
+> Input with auto suggestions 
 
 ## Properties
 

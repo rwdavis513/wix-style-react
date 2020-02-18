@@ -1,0 +1,86 @@
+@import '../common.scss';
+
+.root {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 30px;
+
+  &:hover {
+    background-color: $B60;
+
+    &:active {
+      background-color: $B30;
+    }
+  }
+}
+
+.mainPart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.titles {
+  flex: 1 1 auto;
+  overflow: hidden;
+  margin-left: 12px;
+  display: flex;
+  flex-flow: column;
+}
+
+.image {
+  overflow: hidden;
+  margin: 0 8px 0 20px;
+  flex: 0 0 auto;
+
+  &.tiny {
+    width: 24px;
+    height: 24px;
+  }
+
+  &.small {
+    width: 42px;
+    height: 42px;
+  }
+
+  &.portrait {
+    width: 48px;
+    height: 60px;
+  }
+
+  &.large {
+    width: 60px;
+    height: 60px;
+  }
+
+  &.cinema {
+    width: 102px;
+    height: 60px;
+  }
+
+  &.rectangular {
+    &.tiny, &.small {
+      border-radius: 4px;
+    }
+
+    &.portrait, &.large, &.cinema {
+      border-radius: 6px;
+    }
+  }
+
+  &.circle {
+    border-radius: 50%;
+  }
+}
+
+.extra {
+  flex: 0 0 auto;
+  max-width: 180px;
+  margin-left: 18px;
+  overflow: hidden;
+}
+
+.belowSection {
+  cursor: default;
+}

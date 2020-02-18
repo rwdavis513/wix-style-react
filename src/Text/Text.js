@@ -1,56 +1,111 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import WixComponent from '../WixComponent';
+import { oneOf, bool, string, any } from 'prop-types';
+import ellipsisHOC from '../common/EllipsisHOC';
+import style from './Text.st.css';
 
-import typography, {convertFromUxLangToCss} from '../Typography';
+/*
+ * Temporary fix: SIZES, SKINS, WEIGHTS constants are copied here from constants.js
+ * in order to have AutoDocs able to parse them.
+ * See this issue: https://github.com/wix/wix-ui/issues/784
+ */
+export const SIZES = {
+  tiny: 'tiny',
+  small: 'small',
+  medium: 'medium',
+};
 
-import styles from './styles.scss';
+export const SKINS = {
+  standard: 'standard',
+  error: 'error',
+  success: 'success',
+  premium: 'premium',
+  disabled: 'disabled',
+};
 
-export default class extends WixComponent {
-  static propTypes = {
-    appearance: PropTypes.oneOf([
-      'H0', 'H1', 'H2', 'H2.1', 'H3', 'H4',
-      'T1', 'T1.1', 'T1.2', 'T1.3', 'T1.4',
-      'T2', 'T2.1', 'T2.2', 'T2.3',
-      'T3', 'T3.1', 'T3.2', 'T3.3', 'T3.4',
-      'T4', 'T4.1', 'T4.2', 'T4.3',
-      'T5', 'T5.1']),
-    children: PropTypes.node
-  }
+export const WEIGHTS = {
+  thin: 'thin',
+  normal: 'normal',
+  bold: 'bold',
+};
 
-  static defaultProps = {
-    appearance: 'T1.1'
-  }
+const getStyleDataAttributes = styleAttributes =>
+  Object.keys(styleAttributes).reduce((acc, styleKey) => {
+    acc[`data-${styleKey}`] = styleAttributes[styleKey];
+    return acc;
+  }, {});
 
-  getType = appearance =>
-    [
-      {type: 'h1', candidates: ['H0']},
-      {type: 'h2', candidates: ['H1']},
-      {type: 'h3', candidates: ['H2', 'H2.1']},
-      {type: 'h4', candidates: ['H3']},
-      {type: 'h5', candidates: ['H4']}
-    ]
-      .filter(({candidates}) => candidates.includes(appearance))
-      .reduceRight((acc, {type}) => type, 'span');
+const Text = ({
+  size,
+  secondary,
+  skin,
+  light,
+  weight,
+  tagName,
+  children,
+  ...rest
+}) => {
+  /* eslint-disable no-unused-vars */
+  const { dataHook, ...textProps } = rest;
 
-  getClassNames = appearance =>
-    [
-      {className: styles.headingDefaults, candidates: ['H0', 'H1', 'H2', 'H2.1', 'H3', 'H4']}
-    ]
-      .filter(({candidates}) => candidates.includes(appearance))
-      .reduce((acc, {className}) =>
-        acc.concat(className),
-        [typography[convertFromUxLangToCss(appearance)]])
-      .join(' ');
+  const styleAttributes = {
+    size,
+    secondary,
+    skin,
+    light,
+    weight,
+  };
+  const styleDataAttributes = getStyleDataAttributes(styleAttributes);
 
-  render() {
-    const {appearance, children} = this.props;
+  return React.createElement(
+    tagName,
+    {
+      ...textProps,
+      'data-hook': dataHook,
+      ...style('root', styleAttributes, rest),
+      ...styleDataAttributes,
+    },
+    children,
+  );
+};
 
-    return React.createElement(
-      this.getType(appearance),
-      {className: this.getClassNames(appearance)},
-      children
-    );
-  }
-}
+Text.displayName = 'Text';
 
+Text.propTypes = {
+  dataHook: string,
+  /** tag name that will be rendered */
+  tagName: string,
+
+  /** class to be applied to the root element */
+  className: string,
+
+  /** font size of the text */
+  size: oneOf(Object.keys(SIZES)),
+
+  /** any nodes to be rendered (usually text nodes) */
+  children: any,
+
+  /** is the text type is secondary. Affects the font color */
+  secondary: bool,
+
+  /** skin color of the text */
+  skin: oneOf(Object.keys(SKINS)),
+
+  /** make the text color lighter */
+  light: bool,
+
+  /** font weight of the text */
+  weight: oneOf(Object.keys(WEIGHTS)),
+
+  ...ellipsisHOC.propTypes,
+};
+
+Text.defaultProps = {
+  size: SIZES.medium,
+  secondary: false,
+  skin: SKINS.standard,
+  light: false,
+  weight: WEIGHTS.thin,
+  tagName: 'span',
+};
+
+export default ellipsisHOC(Text);

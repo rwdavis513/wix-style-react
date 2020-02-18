@@ -1,50 +1,264 @@
-@import '../common';
+@import '../common.scss';
 
-.tag {
-  @include FontLight();
-  background-color: $B40;
-  border-radius: 100px;
-  display: flex;
+.root {
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  padding: 2px 12px 2px 12px;
-  margin-left: 7px;
-  margin-top: 4px;
-  margin-bottom: 4px;
-  height: 24px;
+  transition: background-color ease 300ms;
+  max-width: -moz-available;
+  max-width: -webkit-fill-available;
+  max-width: stretch;
+  min-height: 18px;
 
   .thumb {
-    margin-right: 5px;
+    //TODO - should be done in the Avatar component
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    flex: 0 0 auto;
   }
 
-  .tagRemoveButton {
-    cursor: pointer;
-    padding-left: 10px;
-    padding-bottom: 2px;
-    color: $B10;
-    font-size: 14px;
+  .removeButton {
+    flex: 0 0 auto;
+  }
+}
 
-    &:before {
-      content: 'x';
+//Sizes
+.tinySize {
+  padding: 0 9px;
+  border-radius: 9px;
+
+  &.withThumb {
+    padding-left: 3px;
+  }
+
+  &.withRemoveButton {
+    padding-right: 3px;
+  }
+
+  .thumb {
+    //TODO - sizes should be taken from the Avatar component
+    height: 12px;
+    width: 12px;
+    margin-right: 6px;
+  }
+}
+
+.smallSize {
+  padding: 3px 12px;
+  border-radius: 12px;
+
+  &.withThumb {
+    padding-left: 3px;
+  }
+
+  &.withRemoveButton {
+    padding-right: 3px;
+  }
+
+  .thumb {
+    //TODO - sizes should be taken from the Avatar component
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+  }
+
+  .removeButton {
+    margin-left: 6px;
+  }
+}
+
+.mediumSize {
+  padding: 6px 12px;
+  border-radius: 15px;
+
+  &.withThumb {
+    padding-left: 6px;
+  }
+
+  &.withRemoveButton {
+    padding-right: 6px;
+  }
+
+  .thumb {
+    //TODO - sizes should be taken from the Avatar component
+    height: 18px;
+    width: 18px;
+    margin-right: 12px;
+  }
+
+  .removeButton {
+    margin-left: 6px;
+  }
+}
+
+.largeSize {
+  padding: 6px 18px;
+  border-radius: 18px;
+
+  &.withThumb {
+    padding-left: 6px;
+  }
+
+  &.withRemoveButton {
+    padding-right: 6px;
+  }
+
+  .thumb {
+    //TODO - sizes should be taken from the Avatar component
+    height: 24px;
+    width: 24px;
+    margin-right: 12px;
+  }
+
+  .removeButton {
+    margin-left: 12px;
+  }
+}
+
+:not(.disabled) {
+  &.clickable {
+    cursor: pointer;
+  }
+
+  //Themes
+  &.standard-theme {
+    background-color: $B40;
+
+    &.clickable:hover {
+      background-color: $B30;
     }
   }
 
-  &.disabled {
-    background-color: $GR30;
-    color: $D30;
+  &.warning-theme {
+    background-color: $Y40;
+
+    &.clickable:hover {
+      background-color: $Y30;
+    }
+  }
+
+  &.error-theme {
+    background-color: $R40;
+
+    &.clickable:hover {
+      background-color: $R30;
+    }
+  }
+
+  &.dark-theme {
+    background-color: $D20;
+    color: $D80;
+
+    &.clickable:hover {
+      background-color: $D10;
+    }
+  }
+
+  &.neutral-theme {
+    background-color: $D70;
+
+    &.clickable:hover {
+      background-color: $D60;
+    }
+  }
+
+  &.light-theme {
+    background-color: $D80;
+
+    &.clickable:hover {
+      background-color: $B50;
+    }
   }
 }
 
-.large {
-  height: 36px;
+.disabled {
+  background-color: $D10-05;
+  color: $D10-30;
 }
 
-.tagWrap {
-  overflow: hidden;
-}
+@include withRTL() {
+  .tinySize {
+    padding: 0 9px;
 
-.innerTagWrap {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+    &.withThumb {
+      padding-right: 3px;
+    }
 
+    &.withRemoveButton {
+      padding-left: 3px;
+    }
+
+    .thumb {
+      margin-left: 6px;
+      margin-right: 0;
+    }
+  }
+
+  .smallSize {
+    padding: 0 12px;
+
+    &.withThumb {
+      padding-right: 3px;
+    }
+
+    &.withRemoveButton {
+      padding-left: 3px;
+    }
+
+    .thumb {
+      margin-left: 6px;
+      margin-right: 0;
+    }
+
+    .removeButton {
+      margin-left: 0;
+      margin-right: 6px;
+    }
+  }
+
+  .mediumSize {
+    padding: 0 12px;
+
+    &.withThumb {
+      padding-right: 6px;
+    }
+
+    &.withRemoveButton {
+      padding-left: 6px;
+    }
+
+    .thumb {
+      margin-left: 12px;
+      margin-right: 0;
+    }
+
+    .removeButton {
+      margin-left: 0;
+      margin-right: 6px;
+    }
+  }
+
+  .largeSize {
+    padding: 0 18px;
+
+    &.withThumb {
+      padding-right: 6px;
+    }
+
+    &.withRemoveButton {
+      padding-left: 6px;
+    }
+
+    .thumb {
+      margin-left: 12px;
+      margin-right: 0;
+    }
+
+    .removeButton {
+      margin-left: 0;
+      margin-right: 12px;
+    }
+  }
+}
